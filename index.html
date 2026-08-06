@@ -125,6 +125,9 @@
     display:inline-block; font-size:10px; font-weight:700; color:var(--accent);
     background:var(--accent-soft); border-radius:5px; padding:1.5px 6px; margin-right:6px;
   }
+  .pend-chip{cursor:pointer; border-radius:4px; padding:1px 3px;}
+  .pend-chip:active{background:var(--accent-soft);}
+  .pend-chip.declined{text-decoration:line-through; color:var(--danger);}
 
   .panel{background:var(--surface); border:1px solid var(--line); border-radius:12px; margin-bottom:14px; overflow:hidden; box-shadow:var(--shadow);}
   .panel-head{display:flex; align-items:center; gap:8px; padding:12px 14px; cursor:pointer;}
@@ -318,6 +321,17 @@
       <label class="chk" style="margin-bottom:6px;"><input type="checkbox" id="fPendAna"> Pak Ana</label>
       <label class="chk" style="margin-bottom:6px;"><input type="checkbox" id="fPendLiyane"> Liyane:</label>
       <input type="text" id="fPendLiyaneTxt" placeholder="jeneng, pisah koma menawi langkung setunggal">
+    </div>
+
+    <div class="field">
+      <label>Kagem</label>
+      <select id="fPemilik">
+        <option value="">Al Mukarram / Al-Ittihad</option>
+        <option value="Pak Suprih">Pribadi - Pak Suprih</option>
+        <option value="Pak Ana">Pribadi - Pak Ana</option>
+        <option value="__liyane__">Pribadi - Liyane</option>
+      </select>
+      <input type="text" id="fPemilikLiyane" placeholder="jeneng" style="margin-top:6px; display:none;">
     </div>
 
     <div id="blokSelapanan">
@@ -605,6 +619,51 @@ function companionText(ev){
   return null;
 }
 
+function companionHtml(ev, idx){
+  if (!ev.pendherek || !ev.pendherek.length) return "";
+  var declined = ev.tidak_bisa || [];
+  var chips = ev.pendherek.map(function(nm){
+    var isDeclined = declined.indexOf(nm) !== -1;
+    return '<span class="pend-chip' + (isDeclined ? ' declined' : '') + '" data-idx="' + idx + '" data-name="' + esc(nm) + '">' +
+      esc(nm) + (isDeclined ? ' ❌' : '') + '</span>';
+  }).join(', ');
+  return '👥 Bersama ' + chips;
+}
+
+function pemilikText(ev){
+  return ev.pemilik ? ("👤 Pribadi: " + ev.pemilik) : null;
+}
+
+function toggleDecline(idx, name){
+  var ev = CURRENT_JADWAL[idx];
+  if (!ev) return;
+  var declined = ev.tidak_bisa || [];
+  var isDeclined = declined.indexOf(name) !== -1;
+  var msg = isDeclined
+    ? (name + ": mbatalaken pratelan \"mboten saged ndherekaken\", dados saged ndherekaken malih. Lanjut?")
+    : (name + ": negesaken MBOTEN SAGED ndherekaken acara \"" + ev.label + "\". Al Mukarram badhe pirso. Lanjut?");
+  if (!confirm(msg)) return;
+  var updated = CURRENT_JADWAL.slice();
+  var newEv = Object.assign({}, ev);
+  newEv.tidak_bisa = isDeclined ? declined.filter(function(n){ return n !== name; }) : declined.concat([name]);
+  updated[idx] = newEv;
+  if (!FIREBASE_URL){ alert("Kaca menika dèrèng kesambet Firebase, mboten saged nyimpen."); return; }
+  fetch(FIREBASE_URL.replace(/\/$/,"") + "/jadwal.json", {
+    method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify(updated)
+  }).then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(){
+      try{ localStorage.setItem(STORE_KEY, JSON.stringify({jadwal: updated, at: Date.now()})); }catch(e){}
+      useData(updated, new Date().toLocaleString("id-ID", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}));
+    })
+    .catch(function(){ alert("Boten saged nyimpen — mriksani sambungan internet, lajeng cobi malih."); });
+}
+
+document.addEventListener("click", function(e){
+  var chip = e.target.closest(".pend-chip");
+  if (!chip) return;
+  toggleDecline(parseInt(chip.dataset.idx, 10), chip.dataset.name);
+});
+
 function wetonBadge(ev){
   if (ev.hijri_month) return HIJRI_BULAN[ev.hijri_month] + " " + arNum(ev.hijri_day) + " H";
   if (ev.weekday) return ev.pasaran ? (ev.weekday + " " + ev.pasaran) : ev.weekday;
@@ -648,12 +707,16 @@ function render(jadwal, now){
   hl.innerHTML =
     '<p class="hl-label">' + (first.ev.added_by === "sopir" ? "🚘 " : "") + esc(first.ev.label) + '</p>' +
     (first.ev.sub ? '<p class="hl-sub">' + esc(first.ev.sub) + '</p>' : '') +
-    (companionText(first.ev) ? '<p class="hl-sub" style="color:var(--accent);font-weight:600;">' + esc(companionText(first.ev)) + '</p>' : '') +
+    (first.ev.pendherek && first.ev.pendherek.length ? '<p class="hl-sub" style="color:var(--accent);font-weight:600;">' + companionHtml(first.ev, first.idx) + '</p>' : '') +
+    (pemilikText(first.ev) ? '<p class="hl-sub" style="color:var(--hl-accent);font-weight:600;">' + esc(pemilikText(first.ev)) + '</p>' : '') +
     '<div class="hl-when">' +
       '<span class="hl-date">' + (badge ? '<span class="badge">'+esc(badge)+'</span>' : '') + esc(whenText(first.ev, first.dt)) + '</span>' +
       '<span class="hl-rel">' + relText(first.dt, now) + '</span>' +
     '</div>';
-  hl.addEventListener("click", function(){ openSheet(first.idx); });
+  hl.addEventListener("click", function(e){
+    if (e.target.closest(".pend-chip")) return;
+    openSheet(first.idx);
+  });
   hlSlot.appendChild(hl);
 
   var rest = occs.slice(1);
@@ -678,12 +741,16 @@ function render(jadwal, now){
     var row = document.createElement("div");
     row.className = "row";
     row.style.cursor = "pointer";
-    row.addEventListener("click", (function(idx){ return function(){ openSheet(idx); }; })(o.idx));
+    row.addEventListener("click", (function(idx){ return function(e){
+      if (e.target.closest(".pend-chip")) return;
+      openSheet(idx);
+    }; })(o.idx));
     row.innerHTML =
       '<div class="row-top"><span class="row-label">' + (o.ev.added_by === "sopir" ? "🚘 " : "") + esc(o.ev.label) + '</span>' +
       (timeTxt ? '<span class="row-time">'+timeTxt+'</span>' : '') + '</div>' +
       (o.ev.sub ? '<div class="row-sub">'+esc(o.ev.sub)+'</div>' : '') +
-      (companionText(o.ev) ? '<div class="row-sub" style="color:var(--accent);font-weight:600;">'+esc(companionText(o.ev))+'</div>' : '') +
+      (o.ev.pendherek && o.ev.pendherek.length ? '<div class="row-sub" style="color:var(--accent);font-weight:600;">'+companionHtml(o.ev, o.idx)+'</div>' : '') +
+      (pemilikText(o.ev) ? '<div class="row-sub" style="color:var(--hl-accent);font-weight:600;">'+esc(pemilikText(o.ev))+'</div>' : '') +
       '<div class="row-meta">' + (badge2 ? '<span class="badge">'+esc(badge2)+'</span>' : '') +
       (!o.ev.jam && o.ev.jam_label ? esc(o.ev.jam_label) : '') + '</div>';
     box.appendChild(row);
@@ -859,6 +926,16 @@ function openSheet(idx){
   var liyane0 = pend0.filter(function(p){ return p !== "Pak Suprih" && p !== "Pak Ana"; });
   $("fPendLiyane").checked = liyane0.length > 0;
   $("fPendLiyaneTxt").value = liyane0.join(", ");
+  var pemilik0 = ev ? (ev.pemilik || "") : "";
+  if (!pemilik0 || pemilik0 === "Pak Suprih" || pemilik0 === "Pak Ana"){
+    $("fPemilik").value = pemilik0;
+    $("fPemilikLiyane").value = "";
+    $("fPemilikLiyane").style.display = "none";
+  } else {
+    $("fPemilik").value = "__liyane__";
+    $("fPemilikLiyane").value = pemilik0;
+    $("fPemilikLiyane").style.display = "";
+  }
   $("formErr").className = "formerr";
 
   var jenis = "selapanan";
@@ -882,6 +959,9 @@ function setJenis(j){
 }
 document.querySelectorAll("#jenisSeg button").forEach(function(b){
   b.addEventListener("click", function(){ setJenis(b.dataset.jenis); });
+});
+$("fPemilik").addEventListener("change", function(){
+  $("fPemilikLiyane").style.display = ($("fPemilik").value === "__liyane__") ? "" : "none";
 });
 $("fabAdd").addEventListener("click", openSheet);
 $("btnCancel").addEventListener("click", closeSheet);
@@ -908,7 +988,14 @@ function buildEventFromForm(){
       nm = nm.trim(); if (nm) pendherek.push(nm);
     });
   }
-  var ev = {label: label, sub: sub, jam: jam, jam_label: jamLabel, added_by: addedBy, pendherek: pendherek};
+  var pemilikSel = $("fPemilik").value;
+  var pemilik = null;
+  if (pemilikSel === "__liyane__"){
+    pemilik = $("fPemilikLiyane").value.trim() || null;
+  } else if (pemilikSel){
+    pemilik = pemilikSel;
+  }
+  var ev = {label: label, sub: sub, jam: jam, jam_label: jamLabel, added_by: addedBy, pendherek: pendherek, pemilik: pemilik};
 
   if (curJenis === "selapanan"){
     ev.weekday = $("fWeekday").value;
