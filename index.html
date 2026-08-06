@@ -1,0 +1,1081 @@
+﻿<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jadwal Al Mukarram</title>
+<style>
+  @font-face { font-family: initial; src: local(""); } /* no-op, keep system stack only */
+  :root{
+    --bg:#f4f2ec; --surface:#ffffff; --surface2:#faf8f2; --line:#e2ddd0;
+    --ink:#20222b; --muted:#5d6169; --faint:#9a9da6;
+    --accent:#2b2d84; --accent2:#4548b8; --accent-ink:#ffffff; --accent-soft:#e8e7fa;
+    --hl-bg:#fdf3dc; --hl-line:#eddba0; --hl-accent:#8a5c00;
+    --danger:#a3271e; --danger-bg:#fbeceb;
+    --ok:#1a7f37;
+    --shadow:0 10px 26px -14px rgba(43,45,132,.35);
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1117; --surface:#181b24; --surface2:#1e222c; --line:#2b2f3b;
+    --ink:#edeef3; --muted:#9ba0ac; --faint:#666b78;
+    --accent:#9698ea; --accent2:#b3b5f2; --accent-ink:#0f1117; --accent-soft:#252947;
+    --hl-bg:#2b230e; --hl-line:#4d3d16; --hl-accent:#f0c464;
+    --danger:#ef8177; --danger-bg:#301917;
+    --ok:#6bdb92;
+    --shadow:0 10px 26px -14px rgba(0,0,0,.6);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1117; --surface:#181b24; --surface2:#1e222c; --line:#2b2f3b;
+      --ink:#edeef3; --muted:#9ba0ac; --faint:#666b78;
+      --accent:#9698ea; --accent2:#b3b5f2; --accent-ink:#0f1117; --accent-soft:#252947;
+      --hl-bg:#2b230e; --hl-line:#4d3d16; --hl-accent:#f0c464;
+      --danger:#ef8177; --danger-bg:#301917;
+      --ok:#6bdb92;
+      --shadow:0 10px 26px -14px rgba(0,0,0,.6);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    font-variant-numeric:tabular-nums;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;}
+  header{
+    position:sticky; top:0; z-index:5; color:var(--accent-ink);
+    background:linear-gradient(160deg, var(--accent), var(--accent2));
+    padding:14px 16px 12px;
+  }
+  .htop{display:flex; align-items:center; gap:10px;}
+  .mono{
+    width:34px; height:34px; border-radius:9px; background:rgba(255,255,255,.18);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;
+    letter-spacing:.02em; flex:none;
+  }
+  .htitle{flex:1; min-width:0;}
+  .htitle h1{margin:0; font-size:16px; font-weight:700; letter-spacing:-.01em;}
+  .htitle p{margin:1px 0 0; font-size:11.5px; opacity:.82;}
+  .iconbtn{
+    flex:none; width:32px; height:32px; border-radius:8px; border:none;
+    background:rgba(255,255,255,.16); color:inherit; font-size:15px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .iconbtn:active{background:rgba(255,255,255,.3);}
+  .refresh.spin{animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .syncline{margin-top:8px; font-size:11px; opacity:.78; display:flex; align-items:center; gap:5px;}
+  .dot{width:6px; height:6px; border-radius:50%; background:#7be08f; flex:none;}
+  .dot.off{background:#e5766c;}
+
+  main{flex:1; padding:14px 16px 28px;}
+
+  .banner{
+    background:var(--danger-bg); color:var(--danger); border:1px solid var(--hl-line);
+    border-color:var(--danger); border-radius:10px; padding:10px 12px; font-size:12.5px;
+    margin-bottom:14px; line-height:1.5;
+  }
+  .install{
+    background:var(--surface2); border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.55;
+    position:relative;
+  }
+  .install b{color:var(--ink);}
+  .install .x{
+    position:absolute; top:6px; right:8px; border:none; background:none; color:var(--faint);
+    font-size:15px; cursor:pointer; padding:4px;
+  }
+
+  .eyebrow{
+    font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--hl-accent); margin:0 0 8px;
+  }
+  .hl-card{
+    background:var(--hl-bg); border:1px solid var(--hl-line); border-radius:14px;
+    padding:14px 16px 16px; margin-bottom:20px; box-shadow:var(--shadow);
+  }
+  .hl-label{font-size:17px; font-weight:700; letter-spacing:-.01em; margin:0 0 2px;}
+  .hl-sub{font-size:12.5px; color:var(--muted); margin:0 0 10px;}
+  .hl-when{display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+  .hl-date{font-size:13.5px; color:var(--ink); font-weight:600;}
+  .hl-rel{
+    font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px;
+    background:var(--hl-accent); color:var(--hl-bg); white-space:nowrap;
+  }
+  .empty{color:var(--muted); font-size:13px; padding:20px 4px; text-align:center;}
+
+  .section-title{
+    font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--faint); margin:20px 2px 8px;
+  }
+  .agenda{background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:var(--shadow);}
+  .day-head{
+    font-size:11.5px; font-weight:700; color:var(--accent); background:var(--accent-soft);
+    padding:7px 12px;
+  }
+  .row{padding:10px 12px; border-top:1px solid var(--line);}
+  .row:first-child, .day-head + .row{border-top:none;}
+  .row-top{display:flex; justify-content:space-between; gap:10px; align-items:baseline;}
+  .row-label{font-size:13.5px; font-weight:600; line-height:1.35;}
+  .row-time{font-size:12px; color:var(--accent); font-weight:700; white-space:nowrap; flex:none;}
+  .row-sub{font-size:11.5px; color:var(--muted); margin-top:2px;}
+  .row-meta{font-size:11px; color:var(--faint); margin-top:4px;}
+  .badge{
+    display:inline-block; font-size:10px; font-weight:700; color:var(--accent);
+    background:var(--accent-soft); border-radius:5px; padding:1.5px 6px; margin-right:6px;
+  }
+
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:12px; margin-bottom:14px; overflow:hidden; box-shadow:var(--shadow);}
+  .panel-head{display:flex; align-items:center; gap:8px; padding:12px 14px; cursor:pointer;}
+  .panel-head .chev{color:var(--accent); font-size:12px; width:14px; flex:none;}
+  .panel-head .ptitle{flex:1; font-size:13.5px; font-weight:700; color:var(--accent);}
+  .panel-body{padding:0 14px 14px;}
+  .panel-body.closed{display:none;}
+
+  .sholat-date{display:flex; justify-content:space-between; align-items:baseline; padding:0 0 8px; font-size:12px; color:var(--muted);}
+  .sholat-date .weton{color:var(--accent); font-weight:700;}
+  .sholat-list{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+  .sholat-item{display:flex; justify-content:space-between; padding:8px 10px; border-radius:8px; background:var(--surface2); font-size:12.5px;}
+  .sholat-item.next{background:var(--hl-bg); border:1px solid var(--hl-line);}
+  .sholat-item .snm{color:var(--muted);}
+  .sholat-item.next .snm{color:var(--hl-accent); font-weight:700;}
+  .sholat-item .stime{font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums;}
+
+  .cal-nav{display:flex; align-items:center; justify-content:space-between; padding:2px 0 8px;}
+  .cal-nav button{background:none; border:none; color:var(--accent); font-size:17px; font-weight:800; cursor:pointer; padding:2px 12px;}
+  .cal-nav .cal-title{font-size:13px; font-weight:700;}
+  .cal-today, .cal-hijri-range{text-align:center; font-size:11.5px; margin-bottom:6px;}
+  .cal-today{color:var(--hl-accent); cursor:pointer;}
+  .cal-hijri-range{color:var(--hl-accent);}
+  .cal-koreksi{display:flex; align-items:center; justify-content:center; gap:8px; font-size:11.5px; color:var(--muted); margin-bottom:10px;}
+  .cal-koreksi button{background:var(--surface2); border:1px solid var(--line); color:var(--accent); width:22px; height:22px; border-radius:6px; cursor:pointer; font-weight:800;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:3px;}
+  .cal-dow{text-align:center; font-size:10px; color:var(--faint); font-weight:700; padding-bottom:4px;}
+  .cal-cell{aspect-ratio:1; border-radius:7px; background:var(--surface2); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; gap:1px;}
+  .cal-cell.today{background:var(--hl-bg); border:1px solid var(--hl-line);}
+  .cal-cell .cd{font-size:12px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .cal-cell.today .cd{color:var(--hl-accent);}
+  .cal-cell .ch{color:var(--faint); font-size:9px;}
+  .cal-cell .cp{color:var(--muted); font-size:8px;}
+  .cal-cell.blank{background:transparent;}
+
+  footer{padding:16px; text-align:center;}
+  footer p{margin:0; font-size:10.5px; color:var(--faint); line-height:1.6;}
+
+  .fab{
+    position:fixed; right:18px; bottom:20px; z-index:10; width:52px; height:52px;
+    border-radius:16px; border:none; background:var(--accent); color:var(--accent-ink);
+    font-size:26px; line-height:1; cursor:pointer; box-shadow:0 6px 18px rgba(0,0,0,.25);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .fab:active{transform:scale(.95);}
+
+  .overlay{
+    position:fixed; inset:0; background:rgba(10,10,14,.5); z-index:20;
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .overlay.hidden{display:none;}
+  .sheet{
+    width:100%; max-width:480px; max-height:88vh; overflow-y:auto;
+    background:var(--surface); border-radius:18px 18px 0 0; padding:18px 18px 24px;
+  }
+  .sheet h2{margin:0 0 14px; font-size:16px; font-weight:700;}
+  .field{margin-bottom:12px;}
+  .field label{display:block; font-size:11.5px; font-weight:700; color:var(--muted); margin-bottom:4px;}
+  .field input[type="text"], .field input[type="date"], .field input[type="time"],
+  .field input[type="number"], .field select{
+    width:100%; padding:9px 10px; border-radius:8px; border:1px solid var(--line);
+    background:var(--surface2); color:var(--ink); font-size:13.5px; font-family:inherit;
+  }
+  .seg{display:flex; gap:6px; margin-bottom:14px;}
+  .seg button{
+    flex:1; padding:8px 4px; border-radius:8px; border:1px solid var(--line);
+    background:var(--surface2); color:var(--muted); font-size:11.5px; font-weight:700; cursor:pointer;
+  }
+  .seg button.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+  .row2{display:flex; gap:8px;}
+  .row2 .field{flex:1;}
+  .chk{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink); margin-bottom:14px;}
+  .chk input{width:16px; height:16px;}
+  .formerr{
+    font-size:11.5px; color:var(--danger); background:var(--danger-bg); border-radius:8px;
+    padding:8px 10px; margin-bottom:12px; display:none;
+  }
+  .formerr.show{display:block;}
+  .sheetbtns{display:flex; gap:10px; margin-top:4px;}
+  .sheetbtns button{
+    flex:1; padding:11px; border-radius:10px; border:none; font-size:13.5px; font-weight:700; cursor:pointer;
+  }
+  .btn-cancel{background:var(--surface2); color:var(--muted); border:1px solid var(--line) !important;}
+  .btn-save{background:var(--accent); color:var(--accent-ink);}
+  .btn-save:disabled{opacity:.55;}
+  .btn-del{background:var(--danger-bg); color:var(--danger);}
+  .btn-del.hidden{display:none;}
+  .row:active, .hl-card:active{opacity:.8;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="htop">
+      <div class="mono">AI</div>
+      <div class="htitle">
+        <h1>Jadwal Al Mukarram</h1>
+        <p>K.M. Syaefurrokhman MQ · Al-Ittihad</p>
+      </div>
+      <button class="iconbtn" id="themeBtn" title="Mode padhang/peteng" aria-label="Mode padhang/peteng">🌙</button>
+      <button class="iconbtn refresh" id="refreshBtn" title="Mutahiraken" aria-label="Mutahiraken">⟳</button>
+    </div>
+    <div class="syncline"><span class="dot" id="statusDot"></span><span id="statusText">Mbikak data…</span></div>
+  </header>
+
+  <main>
+    <div id="bannerSlot"></div>
+    <div class="install" id="notifHint">
+      <button class="x" id="notifX" aria-label="tutup">✕</button>
+      🔔 Kepingin dipun-elingaken ±30 menit sadurunge acara? <button type="button" id="notifBtn"
+      style="background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer;">Aktifake Notifikasi</button>
+      <div style="margin-top:4px;">Namung mlaku nalika kaca menika kabikak (tab saged ing latar mburi, nanging browser mboten pareng ditutup babar pisan).</div>
+    </div>
+    <div class="install" id="installHint">
+      <button class="x" id="installX" aria-label="tutup">✕</button>
+      Supados gampil dipun-tingali sewaktos-wanci: <b>Android</b> pencet titik tiga pojok tengen
+      browser → <b>Tambahake ke Layar Utama</b>. <b>iPhone</b>: tombol Share (kothak+panah) →
+      <b>Add to Home Screen</b>.
+    </div>
+
+    <div class="panel" id="panelSholat">
+      <div class="panel-head" id="sholatHead">
+        <span class="chev" id="sholatChev">▾</span>
+        <span class="ptitle">Waktu Sholat · Temanggung</span>
+      </div>
+      <div class="panel-body" id="sholatBody">
+        <div class="sholat-date"><span id="sholatDateTxt"></span><span class="weton" id="sholatWetonTxt"></span></div>
+        <div class="sholat-list" id="sholatList"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panelKalender">
+      <div class="panel-head" id="kalHead">
+        <span class="chev" id="kalChev">▸</span>
+        <span class="ptitle">Kalender Masehi + Hijriyah</span>
+      </div>
+      <div class="panel-body closed" id="kalBody">
+        <div class="cal-nav">
+          <button type="button" id="calPrev">‹</button>
+          <span class="cal-title" id="calTitle"></span>
+          <button type="button" id="calNext">›</button>
+        </div>
+        <div class="cal-today" id="calToday" style="display:none;">● Dinten iki</div>
+        <div class="cal-hijri-range" id="calHijriRange"></div>
+        <div class="cal-koreksi">
+          <button type="button" id="calOffMinus">−</button>
+          <span id="calOffTxt"></span>
+          <button type="button" id="calOffPlus">+</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+    </div>
+
+    <p class="eyebrow">Acara Sabanjuré</p>
+    <div id="highlightSlot"></div>
+
+    <div id="agendaSlot"></div>
+  </main>
+
+  <footer>
+    <p>Jadwal menika kesambet langsung saking widget Al Mukarram — badhe ke-mutahiraken<br>
+    piyambak saben wonten owahan (yèn laptop online). Data pungkasan: <span id="fetchedAt">—</span></p>
+  </footer>
+</div>
+
+<button class="fab" id="fabAdd" aria-label="Tambah jadwal">+</button>
+
+<div class="overlay hidden" id="overlay">
+  <div class="sheet">
+    <h2 id="sheetTitle">Tambah Acara</h2>
+    <div class="formerr" id="formErr"></div>
+
+    <div class="seg" id="jenisSeg">
+      <button type="button" data-jenis="selapanan" class="on">Selapanan</button>
+      <button type="button" data-jenis="hijriyah">Wulan Hijriyah</button>
+      <button type="button" data-jenis="tanggal">Tanggal Tartamtu</button>
+    </div>
+
+    <div class="field">
+      <label>Jeneng Acara</label>
+      <input type="text" id="fLabel" placeholder="mis. Mujahadah ...">
+    </div>
+    <div class="field">
+      <label>Katrangan (mboten wajib)</label>
+      <input type="text" id="fSub" placeholder="mis. lokasi/panitia">
+    </div>
+
+    <div class="field">
+      <label>Kadherekaken</label>
+      <label class="chk" style="margin-bottom:6px;"><input type="checkbox" id="fPendSuprih"> Pak Suprih</label>
+      <label class="chk" style="margin-bottom:6px;"><input type="checkbox" id="fPendAna"> Pak Ana</label>
+      <label class="chk" style="margin-bottom:6px;"><input type="checkbox" id="fPendLiyane"> Liyane:</label>
+      <input type="text" id="fPendLiyaneTxt" placeholder="jeneng, pisah koma menawi langkung setunggal">
+    </div>
+
+    <div id="blokSelapanan">
+      <div class="row2">
+        <div class="field">
+          <label>Dinten</label>
+          <select id="fWeekday">
+            <option>Senin</option><option>Selasa</option><option>Rebo</option>
+            <option>Kemis</option><option>Jemuah</option><option>Setu</option>
+            <option selected>Ahad</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Pasaran (mboten wajib)</label>
+          <select id="fPasaran">
+            <option value="">—</option>
+            <option>Legi</option><option>Pahing</option><option>Pon</option>
+            <option>Wage</option><option>Kliwon</option>
+          </select>
+        </div>
+      </div>
+      <label class="chk"><input type="checkbox" id="fMalam"> Wengi/dalu (wiwit ba'da Maghrib, tanggal Masehi mundur sedinten)</label>
+    </div>
+
+    <div id="blokHijriyah" style="display:none;">
+      <div class="row2">
+        <div class="field">
+          <label>Wulan Hijriyah</label>
+          <select id="fHijriBulan">
+            <option value="1">Muharram</option><option value="2">Shafar</option>
+            <option value="3">Rabi'ul Awwal</option><option value="4">Rabi'ul Akhir</option>
+            <option value="5">Jumadil Ula</option><option value="6">Jumadil Akhir</option>
+            <option value="7">Rajab</option><option value="8" selected>Sya'ban</option>
+            <option value="9">Ramadhan</option><option value="10">Syawal</option>
+            <option value="11">Dzulqa'dah</option><option value="12">Dzulhijjah</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tanggal (1-30)</label>
+          <input type="number" id="fHijriHari" min="1" max="30" value="15">
+        </div>
+      </div>
+    </div>
+
+    <div id="blokTanggal" style="display:none;">
+      <div class="row2">
+        <div class="field">
+          <label>Tanggal</label>
+          <input type="date" id="fDateStart">
+        </div>
+        <div class="field">
+          <label>s.d. (menawi rentang)</label>
+          <input type="date" id="fDateEnd">
+        </div>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Jam pasti (mboten wajib)</label>
+        <input type="time" id="fJam">
+      </div>
+      <div class="field">
+        <label>utawa katrangan jam</label>
+        <input type="text" id="fJamLabel" placeholder="mis. Ba'da Maghrib">
+      </div>
+    </div>
+
+    <div class="sheetbtns">
+      <button type="button" class="btn-del hidden" id="btnDel">Busak</button>
+      <button type="button" class="btn-cancel" id="btnCancel">Batal</button>
+      <button type="button" class="btn-save" id="btnSave">Simpen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+// ====== KONFIGURASI ======
+// Isi kanthi databaseURL Firebase Realtime Database (mis.
+// "https://xxx-default-rtdb.asia-southeast1.firebasedatabase.app") supados kaca
+// menika saged maos jadwal ingkang ke-unggah widget. Yèn kosong, kaca namung
+// nedahaken data statis (fallback) ing ngandhap, mboten ke-mutahiraken otomatis.
+var FIREBASE_URL = "https://jadwalku-270ce-default-rtdb.asia-southeast1.firebasedatabase.app";
+var POLL_MS = 60000;
+
+// ====== FALLBACK (dipun-tampilaken yèn dèrèng kesambet Firebase utawa offline) ======
+var FALLBACK_JADWAL = [
+{"label":"Selapanan Pengajian","sub":"","weekday":"Ahad","pasaran":"Pon","malam":false,"jam":"09:00","jam_label":null},
+{"label":"Mujahadah Selapanan","sub":"Kemis wengi (ba'da Isya')","weekday":"Jemuah","pasaran":"Kliwon","malam":true,"jam":"20:00","jam_label":null},
+{"label":"Haul Simbah Nyai","sub":"Dinten kapundhutipun","weekday":"Senin","pasaran":"Legi","malam":false,"jam":null,"jam_label":null},
+{"label":"Haul Simbah Yai (Al-Maghfurlah)","sub":"Dinten kapundhutipun","weekday":"Senin","pasaran":"Wage","malam":false,"jam":null,"jam_label":null},
+{"label":"Haul KH. Chudlori Tegalrejo","sub":"Dinten kapundhutipun","weekday":"Senin","pasaran":"Kliwon","malam":false,"jam":null,"jam_label":null},
+{"label":"Selapanan Alumni-Mutakhorijin","sub":"API Tegalrejo Magelang","weekday":"Ahad","pasaran":"Kliwon","malam":true,"jam":null,"jam_label":"Ba'da Maghrib"},
+{"label":"Ziarah Maqbaroh + Ngaji Sonten","sub":"Santri","weekday":"Jemuah","pasaran":null,"malam":false,"jam":null,"jam_label":"Sonten"},
+{"label":"Ziarah Maqbaroh + Ngaji Dalu","sub":"Santri","weekday":"Ahad","pasaran":null,"malam":true,"jam":"21:00","jam_label":null},
+{"label":"Maos Maulid Ad-Diba'i","sub":"Santri","weekday":"Ahad","pasaran":"Kliwon","malam":true,"jam":null,"jam_label":"Ba'da Maghrib"},
+{"label":"Haflah Attasyakkur wal Ikhtitam","sub":"Pondok Pesantren Al-Ittihad","hijri_month":8,"hijri_day":15,"jam":null,"jam_label":null},
+{"label":"Haflah Attasyakkur wal Ikhtitam","sub":"Pondok Pesantren API Tegalrejo Magelang","hijri_month":8,"hijri_day":13,"jam":null,"jam_label":null},
+{"label":"Qur'anan","sub":"Santri Ibtida' 1 Th 2 s.d. Ibtida' 3 Th 2 · Area Ziarah Muassis","date_start":"2026-08-07","date_end":"2026-08-12","jam":null,"jam_label":"Malam Setu s.d. Malam Kemis · 18.30-19.30 WIB"},
+{"label":"Mujahadah Lidaf'iddorr","sub":"Santri Ibtida' 2 Th 2 s.d. Ibtida' 3 Th 2","date_start":"2026-08-06","date_end":"2026-08-12","jam":null,"jam_label":"Malam Jemuah s.d. Malam Kemis · 20.00-21.00 WIB"},
+{"label":"Pembacaan Maulidud Diba'","sub":"Santri Ibtida' 1 Th 2 s.d. Ibtida' 3 Th 2","date_start":"2026-08-14","date_end":"2026-08-19","jam":null,"jam_label":"Malam Setu s.d. Malam Kemis · 18.30 WIB s.d. rampung"},
+{"label":"Pembagian Diwanul A'mal","sub":"","date":"2026-08-09","jam":null,"jam_label":"Ahad Pon"},
+{"label":"Liburan Nisfussanah","sub":"","date_start":"2026-08-20","date_end":"2026-09-03","jam":null,"jam_label":"Kemis s.d. Kemis"},
+{"label":"Masuk Mengaji Kembali","sub":"","date":"2026-09-04","jam":null,"jam_label":"Jum'at"},
+{"label":"Ziarah Auliya","sub":"Temanggung-Magelang-Jogja · Kaluwarga Ageng Al-Ittihad lan FOSKA","date":"2026-08-30","jam":null,"jam_label":null},
+{"label":"Selapanan FOSKA","sub":"Forum Silaturahim & Komunikasi Alumni Al-Ittihad · Setu dalu","weekday":"Ahad","pasaran":"Wage","malam":true,"jam":"20:00","jam_label":null},
+{"label":"Pengajian MWC Bejen Temanggung","sub":"","weekday":"Ahad","pasaran":"Wage","malam":false,"jam":"05:00","jam_label":null},
+{"label":"P4SK Pusat","sub":"","weekday":"Kemis","pasaran":"Pon","malam":false,"jam":null,"jam_label":null},
+{"label":"Selapanan NU Ranting Jurang","sub":"","weekday":"Setu","pasaran":"Kliwon","malam":false,"jam":"20:00","jam_label":null},
+{"label":"Selapanan Mujahadah Musholla Gendingan","sub":"","weekday":"Jemuah","pasaran":"Legi","malam":true,"jam":"20:00","jam_label":null},
+{"label":"Kuliah Subuh Masjid Daarul Muttaqin","sub":"","weekday":"Jemuah","pasaran":"Legi","malam":false,"jam":null,"jam_label":"Ba'da Subuh"},
+{"label":"Khutbah Jum'at","sub":"","weekday":"Jemuah","pasaran":"Legi","malam":false,"jam":"12:00","jam_label":null},
+{"label":"Selapanan P4SK Cabang Temanggung","sub":"","weekday":"Setu","pasaran":"Pahing","malam":false,"jam":"10:00","jam_label":null},
+{"label":"Pengajian Selapanan Ahad Pon Al-Ittihad","sub":"","weekday":"Ahad","pasaran":"Pon","malam":false,"jam":"09:00","jam_label":null},
+{"label":"Selapanan Mujahadah Paramedis","sub":"","weekday":"Jemuah","pasaran":"Pon","malam":true,"jam":"20:30","jam_label":null},
+{"label":"Selapanan Brojolan","sub":"","weekday":"Setu","pasaran":"Wage","malam":true,"jam":"20:00","jam_label":null},
+{"label":"Rapat P4SK Pusat","sub":"","weekday":"Setu","pasaran":"Wage","malam":false,"jam":"16:00","jam_label":null},
+{"label":"Majelis Muqimin API Tegalrejo","sub":"","weekday":"Ahad","pasaran":"Kliwon","malam":true,"jam":null,"jam_label":null},
+{"label":"Selapanan Mujahadah Masjid Agung","sub":"","weekday":"Selasa","pasaran":"Pahing","malam":true,"jam":"20:30","jam_label":null},
+{"label":"Selapanan Mujahadah Al-Ittihad","sub":"","weekday":"Jemuah","pasaran":"Kliwon","malam":true,"jam":"20:00","jam_label":null},
+{"label":"Selapanan Pengajian Padangan","sub":"","weekday":"Setu","pasaran":"Legi","malam":true,"jam":"20:00","jam_label":null},
+{"label":"Rapat PT. SHN","sub":"","weekday":"Setu","pasaran":"Legi","malam":false,"jam":null,"jam_label":null},
+{"label":"Selapanan P4SK Anak Cabang Temanggung","sub":"","weekday":"Ahad","pasaran":"Pahing","malam":false,"jam":"13:00","jam_label":null},
+{"label":"Selapanan Musholla Jurang dan Dompon","sub":"","weekday":"Jemuah","pasaran":"Pahing","malam":true,"jam":null,"jam_label":null},
+{"label":"Pengumpulan Koper Jama'ah Umrah","sub":"","date":"2026-08-06","jam":null,"jam_label":null},
+{"label":"Nyembelih Aqiqah","sub":"","date":"2026-09-02","jam":null,"jam_label":null},
+{"label":"Manaqib & Aqiqah Bonsari","sub":"","date":"2026-09-04","jam":null,"jam_label":null},
+{"label":"Aqad Satria","sub":"","date":"2026-09-05","jam":null,"jam_label":null},
+{"label":"Mujahadah Kebonsari","sub":"","date":"2026-09-07","jam":null,"jam_label":null},
+{"label":"Walimah Satria","sub":"","date":"2026-09-09","jam":null,"jam_label":null}
+];
+
+var MAGHRIB_MAP = {"01-01":"18:06","01-02":"18:06","01-03":"18:07","01-04":"18:07","01-05":"18:08","01-06":"18:08","01-07":"18:08","01-08":"18:09","01-09":"18:09","01-10":"18:09","01-11":"18:10","01-12":"18:10","01-13":"18:10","01-14":"18:11","01-15":"18:11","01-16":"18:11","01-17":"18:11","01-18":"18:12","01-19":"18:12","01-20":"18:12","01-21":"18:12","01-22":"18:12","01-23":"18:12","01-24":"18:13","01-25":"18:13","01-26":"18:13","01-27":"18:13","01-28":"18:13","01-29":"18:13","01-30":"18:13","01-31":"18:13","02-01":"18:13","02-02":"18:13","02-03":"18:13","02-04":"18:13","02-05":"18:13","02-06":"18:13","02-07":"18:13","02-08":"18:12","02-09":"18:12","02-10":"18:12","02-11":"18:12","02-12":"18:12","02-13":"18:12","02-14":"18:11","02-15":"18:11","02-16":"18:11","02-17":"18:11","02-18":"18:11","02-19":"18:10","02-20":"18:10","02-21":"18:10","02-22":"18:09","02-23":"18:09","02-24":"18:09","02-25":"18:08","02-26":"18:08","02-27":"18:08","02-28":"18:07","02-29":"18:07","03-01":"18:07","03-02":"18:07","03-03":"18:06","03-04":"18:06","03-05":"18:05","03-06":"18:05","03-07":"18:04","03-08":"18:04","03-09":"18:04","03-10":"18:03","03-11":"18:03","03-12":"18:02","03-13":"18:02","03-14":"18:01","03-15":"18:01","03-16":"18:00","03-17":"18:00","03-18":"17:59","03-19":"17:59","03-20":"17:58","03-21":"17:58","03-22":"17:57","03-23":"17:57","03-24":"17:56","03-25":"17:56","03-26":"17:55","03-27":"17:55","03-28":"17:54","03-29":"17:54","03-30":"17:53","03-31":"17:53","04-01":"17:52","04-02":"17:51","04-03":"17:51","04-04":"17:50","04-05":"17:50","04-06":"17:49","04-07":"17:49","04-08":"17:48","04-09":"17:48","04-10":"17:47","04-11":"17:47","04-12":"17:46","04-13":"17:46","04-14":"17:46","04-15":"17:45","04-16":"17:45","04-17":"17:44","04-18":"17:44","04-19":"17:43","04-20":"17:43","04-21":"17:43","04-22":"17:42","04-23":"17:42","04-24":"17:41","04-25":"17:41","04-26":"17:41","04-27":"17:40","04-28":"17:40","04-29":"17:40","04-30":"17:39","05-01":"17:39","05-02":"17:39","05-03":"17:39","05-04":"17:38","05-05":"17:38","05-06":"17:38","05-07":"17:38","05-08":"17:37","05-09":"17:37","05-10":"17:37","05-11":"17:37","05-12":"17:37","05-13":"17:36","05-14":"17:36","05-15":"17:36","05-16":"17:36","05-17":"17:36","05-18":"17:36","05-19":"17:36","05-20":"17:35","05-21":"17:35","05-22":"17:35","05-23":"17:35","05-24":"17:35","05-25":"17:35","05-26":"17:35","05-27":"17:35","05-28":"17:35","05-29":"17:35","05-30":"17:35","05-31":"17:35","06-01":"17:35","06-02":"17:36","06-03":"17:36","06-04":"17:36","06-05":"17:36","06-06":"17:36","06-07":"17:36","06-08":"17:36","06-09":"17:36","06-10":"17:36","06-11":"17:37","06-12":"17:37","06-13":"17:37","06-14":"17:37","06-15":"17:37","06-16":"17:37","06-17":"17:38","06-18":"17:38","06-19":"17:38","06-20":"17:38","06-21":"17:38","06-22":"17:39","06-23":"17:39","06-24":"17:39","06-25":"17:39","06-26":"17:40","06-27":"17:40","06-28":"17:40","06-29":"17:40","06-30":"17:41","07-01":"17:41","07-02":"17:41","07-03":"17:41","07-04":"17:41","07-05":"17:42","07-06":"17:42","07-07":"17:42","07-08":"17:42","07-09":"17:43","07-10":"17:43","07-11":"17:43","07-12":"17:43","07-13":"17:43","07-14":"17:44","07-15":"17:44","07-16":"17:44","07-17":"17:44","07-18":"17:44","07-19":"17:45","07-20":"17:45","07-21":"17:45","07-22":"17:45","07-23":"17:45","07-24":"17:45","07-25":"17:46","07-26":"17:46","07-27":"17:46","07-28":"17:46","07-29":"17:46","07-30":"17:46","07-31":"17:46","08-01":"17:46","08-02":"17:46","08-03":"17:47","08-04":"17:47","08-05":"17:47","08-06":"17:47","08-07":"17:47","08-08":"17:47","08-09":"17:47","08-10":"17:47","08-11":"17:47","08-12":"17:47","08-13":"17:47","08-14":"17:47","08-15":"17:47","08-16":"17:47","08-17":"17:47","08-18":"17:47","08-19":"17:47","08-20":"17:47","08-21":"17:47","08-22":"17:47","08-23":"17:47","08-24":"17:47","08-25":"17:47","08-26":"17:46","08-27":"17:46","08-28":"17:46","08-29":"17:46","08-30":"17:46","08-31":"17:46","09-01":"17:46","09-02":"17:46","09-03":"17:45","09-04":"17:45","09-05":"17:45","09-06":"17:45","09-07":"17:45","09-08":"17:45","09-09":"17:45","09-10":"17:45","09-11":"17:44","09-12":"17:44","09-13":"17:44","09-14":"17:44","09-15":"17:44","09-16":"17:44","09-17":"17:43","09-18":"17:43","09-19":"17:43","09-20":"17:43","09-21":"17:43","09-22":"17:43","09-23":"17:43","09-24":"17:42","09-25":"17:42","09-26":"17:42","09-27":"17:42","09-28":"17:42","09-29":"17:42","09-30":"17:42","10-01":"17:41","10-02":"17:41","10-03":"17:41","10-04":"17:41","10-05":"17:41","10-06":"17:41","10-07":"17:41","10-08":"17:41","10-09":"17:41","10-10":"17:40","10-11":"17:40","10-12":"17:40","10-13":"17:40","10-14":"17:40","10-15":"17:40","10-16":"17:40","10-17":"17:40","10-18":"17:40","10-19":"17:40","10-20":"17:40","10-21":"17:40","10-22":"17:40","10-23":"17:40","10-24":"17:40","10-25":"17:40","10-26":"17:40","10-27":"17:41","10-28":"17:41","10-29":"17:41","10-30":"17:41","10-31":"17:41","11-01":"17:41","11-02":"17:41","11-03":"17:41","11-04":"17:42","11-05":"17:42","11-06":"17:42","11-07":"17:42","11-08":"17:42","11-09":"17:43","11-10":"17:43","11-11":"17:43","11-12":"17:43","11-13":"17:44","11-14":"17:44","11-15":"17:44","11-16":"17:45","11-17":"17:45","11-18":"17:45","11-19":"17:46","11-20":"17:46","11-21":"17:46","11-22":"17:47","11-23":"17:47","11-24":"17:48","11-25":"17:48","11-26":"17:48","11-27":"17:49","11-28":"17:49","11-29":"17:50","11-30":"17:50","12-01":"17:51","12-02":"17:51","12-03":"17:52","12-04":"17:52","12-05":"17:53","12-06":"17:53","12-07":"17:53","12-08":"17:54","12-09":"17:54","12-10":"17:55","12-11":"17:56","12-12":"17:56","12-13":"17:57","12-14":"17:57","12-15":"17:58","12-16":"17:58","12-17":"17:59","12-18":"17:59","12-19":"18:00","12-20":"18:00","12-21":"18:01","12-22":"18:01","12-23":"18:02","12-24":"18:02","12-25":"18:03","12-26":"18:03","12-27":"18:04","12-28":"18:04","12-29":"18:05","12-30":"18:05","12-31":"18:05"};
+var SHOLAT_MAP = ﻿{"01-01":{"imsak":"03:59","shubuh":"04:09","terbit":"05:30","dhuha":"05:56","duhur":"11:50","ashar":"15:17","maghrib":"18:06","isya":"19:22"},"01-02":{"imsak":"04:00","shubuh":"04:10","terbit":"05:30","dhuha":"05:56","duhur":"11:51","ashar":"15:17","maghrib":"18:06","isya":"19:23"},"01-03":{"imsak":"04:01","shubuh":"04:11","terbit":"05:31","dhuha":"05:57","duhur":"11:51","ashar":"15:17","maghrib":"18:07","isya":"19:23"},"01-04":{"imsak":"04:01","shubuh":"04:11","terbit":"05:31","dhuha":"05:57","duhur":"11:52","ashar":"15:18","maghrib":"18:07","isya":"19:24"},"01-05":{"imsak":"04:02","shubuh":"04:12","terbit":"05:32","dhuha":"05:58","duhur":"11:52","ashar":"15:18","maghrib":"18:08","isya":"19:24"},"01-06":{"imsak":"04:02","shubuh":"04:12","terbit":"05:32","dhuha":"05:58","duhur":"11:53","ashar":"15:18","maghrib":"18:08","isya":"19:24"},"01-07":{"imsak":"04:03","shubuh":"04:13","terbit":"05:33","dhuha":"05:59","duhur":"11:53","ashar":"15:19","maghrib":"18:08","isya":"19:24"},"01-08":{"imsak":"04:04","shubuh":"04:14","terbit":"05:33","dhuha":"05:59","duhur":"11:53","ashar":"15:19","maghrib":"18:09","isya":"19:25"},"01-09":{"imsak":"04:04","shubuh":"04:14","terbit":"05:34","dhuha":"06:00","duhur":"11:54","ashar":"15:19","maghrib":"18:09","isya":"19:25"},"01-10":{"imsak":"04:05","shubuh":"04:15","terbit":"05:34","dhuha":"06:00","duhur":"11:54","ashar":"15:20","maghrib":"18:09","isya":"19:25"},"01-11":{"imsak":"04:05","shubuh":"04:15","terbit":"05:35","dhuha":"06:01","duhur":"11:55","ashar":"15:20","maghrib":"18:10","isya":"19:26"},"01-12":{"imsak":"04:06","shubuh":"04:16","terbit":"05:35","dhuha":"06:01","duhur":"11:55","ashar":"15:20","maghrib":"18:10","isya":"19:26"},"01-13":{"imsak":"04:07","shubuh":"04:17","terbit":"05:36","dhuha":"06:02","duhur":"11:55","ashar":"15:20","maghrib":"18:10","isya":"19:26"},"01-14":{"imsak":"04:07","shubuh":"04:17","terbit":"05:36","dhuha":"06:02","duhur":"11:56","ashar":"15:20","maghrib":"18:11","isya":"19:26"},"01-15":{"imsak":"04:08","shubuh":"04:18","terbit":"05:37","dhuha":"06:03","duhur":"11:56","ashar":"15:21","maghrib":"18:11","isya":"19:26"},"01-16":{"imsak":"04:08","shubuh":"04:18","terbit":"05:37","dhuha":"06:03","duhur":"11:57","ashar":"15:21","maghrib":"18:11","isya":"19:26"},"01-17":{"imsak":"04:09","shubuh":"04:19","terbit":"05:38","dhuha":"06:04","duhur":"11:57","ashar":"15:21","maghrib":"18:11","isya":"19:27"},"01-18":{"imsak":"04:09","shubuh":"04:19","terbit":"05:38","dhuha":"06:04","duhur":"11:57","ashar":"15:21","maghrib":"18:12","isya":"19:27"},"01-19":{"imsak":"04:10","shubuh":"04:20","terbit":"05:38","dhuha":"06:04","duhur":"11:58","ashar":"15:21","maghrib":"18:12","isya":"19:27"},"01-20":{"imsak":"04:11","shubuh":"04:21","terbit":"05:39","dhuha":"06:05","duhur":"11:58","ashar":"15:21","maghrib":"18:12","isya":"19:27"},"01-21":{"imsak":"04:11","shubuh":"04:21","terbit":"05:39","dhuha":"06:05","duhur":"11:58","ashar":"15:21","maghrib":"18:12","isya":"19:27"},"01-22":{"imsak":"04:12","shubuh":"04:22","terbit":"05:40","dhuha":"06:06","duhur":"11:58","ashar":"15:21","maghrib":"18:12","isya":"19:27"},"01-23":{"imsak":"04:12","shubuh":"04:22","terbit":"05:40","dhuha":"06:06","duhur":"11:59","ashar":"15:21","maghrib":"18:12","isya":"19:27"},"01-24":{"imsak":"04:13","shubuh":"04:23","terbit":"05:41","dhuha":"06:06","duhur":"11:59","ashar":"15:21","maghrib":"18:13","isya":"19:27"},"01-25":{"imsak":"04:13","shubuh":"04:23","terbit":"05:41","dhuha":"06:07","duhur":"11:59","ashar":"15:21","maghrib":"18:13","isya":"19:27"},"01-26":{"imsak":"04:14","shubuh":"04:24","terbit":"05:41","dhuha":"06:07","duhur":"12:00","ashar":"15:21","maghrib":"18:13","isya":"19:27"},"01-27":{"imsak":"04:14","shubuh":"04:24","terbit":"05:42","dhuha":"06:07","duhur":"12:00","ashar":"15:21","maghrib":"18:13","isya":"19:27"},"01-28":{"imsak":"04:15","shubuh":"04:25","terbit":"05:42","dhuha":"06:08","duhur":"12:00","ashar":"15:21","maghrib":"18:13","isya":"19:27"},"01-29":{"imsak":"04:15","shubuh":"04:25","terbit":"05:42","dhuha":"06:08","duhur":"12:00","ashar":"15:21","maghrib":"18:13","isya":"19:27"},"01-30":{"imsak":"04:16","shubuh":"04:26","terbit":"05:43","dhuha":"06:08","duhur":"12:00","ashar":"15:20","maghrib":"18:13","isya":"19:27"},"01-31":{"imsak":"04:16","shubuh":"04:26","terbit":"05:43","dhuha":"06:09","duhur":"12:00","ashar":"15:20","maghrib":"18:13","isya":"19:26"},"02-01":{"imsak":"04:17","shubuh":"04:27","terbit":"05:43","dhuha":"06:09","duhur":"12:01","ashar":"15:20","maghrib":"18:13","isya":"19:26"},"02-02":{"imsak":"04:17","shubuh":"04:27","terbit":"05:44","dhuha":"06:09","duhur":"12:01","ashar":"15:20","maghrib":"18:13","isya":"19:26"},"02-03":{"imsak":"04:17","shubuh":"04:27","terbit":"05:44","dhuha":"06:09","duhur":"12:01","ashar":"15:19","maghrib":"18:13","isya":"19:26"},"02-04":{"imsak":"04:18","shubuh":"04:28","terbit":"05:44","dhuha":"06:10","duhur":"12:01","ashar":"15:19","maghrib":"18:13","isya":"19:26"},"02-05":{"imsak":"04:18","shubuh":"04:28","terbit":"05:44","dhuha":"06:10","duhur":"12:01","ashar":"15:19","maghrib":"18:13","isya":"19:26"},"02-06":{"imsak":"04:19","shubuh":"04:29","terbit":"05:45","dhuha":"06:10","duhur":"12:01","ashar":"15:18","maghrib":"18:13","isya":"19:25"},"02-07":{"imsak":"04:19","shubuh":"04:29","terbit":"05:45","dhuha":"06:10","duhur":"12:01","ashar":"15:18","maghrib":"18:13","isya":"19:25"},"02-08":{"imsak":"04:19","shubuh":"04:29","terbit":"05:45","dhuha":"06:10","duhur":"12:01","ashar":"15:18","maghrib":"18:12","isya":"19:25"},"02-09":{"imsak":"04:20","shubuh":"04:30","terbit":"05:45","dhuha":"06:11","duhur":"12:01","ashar":"15:17","maghrib":"18:12","isya":"19:25"},"02-10":{"imsak":"04:20","shubuh":"04:30","terbit":"05:46","dhuha":"06:11","duhur":"12:01","ashar":"15:17","maghrib":"18:12","isya":"19:24"},"02-11":{"imsak":"04:20","shubuh":"04:30","terbit":"05:46","dhuha":"06:11","duhur":"12:01","ashar":"15:16","maghrib":"18:12","isya":"19:24"},"02-12":{"imsak":"04:21","shubuh":"04:31","terbit":"05:46","dhuha":"06:11","duhur":"12:01","ashar":"15:16","maghrib":"18:12","isya":"19:24"},"02-13":{"imsak":"04:21","shubuh":"04:31","terbit":"05:46","dhuha":"06:11","duhur":"12:01","ashar":"15:15","maghrib":"18:12","isya":"19:24"},"02-14":{"imsak":"04:21","shubuh":"04:31","terbit":"05:46","dhuha":"06:11","duhur":"12:01","ashar":"15:15","maghrib":"18:11","isya":"19:23"},"02-15":{"imsak":"04:22","shubuh":"04:32","terbit":"05:46","dhuha":"06:12","duhur":"12:01","ashar":"15:14","maghrib":"18:11","isya":"19:23"},"02-16":{"imsak":"04:22","shubuh":"04:32","terbit":"05:47","dhuha":"06:12","duhur":"12:01","ashar":"15:13","maghrib":"18:11","isya":"19:23"},"02-17":{"imsak":"04:22","shubuh":"04:32","terbit":"05:47","dhuha":"06:12","duhur":"12:01","ashar":"15:13","maghrib":"18:11","isya":"19:22"},"02-18":{"imsak":"04:22","shubuh":"04:32","terbit":"05:47","dhuha":"06:12","duhur":"12:01","ashar":"15:12","maghrib":"18:11","isya":"19:22"},"02-19":{"imsak":"04:23","shubuh":"04:33","terbit":"05:47","dhuha":"06:12","duhur":"12:01","ashar":"15:11","maghrib":"18:10","isya":"19:21"},"02-20":{"imsak":"04:23","shubuh":"04:33","terbit":"05:47","dhuha":"06:12","duhur":"12:01","ashar":"15:10","maghrib":"18:10","isya":"19:21"},"02-21":{"imsak":"04:23","shubuh":"04:33","terbit":"05:47","dhuha":"06:12","duhur":"12:01","ashar":"15:10","maghrib":"18:10","isya":"19:21"},"02-22":{"imsak":"04:23","shubuh":"04:33","terbit":"05:47","dhuha":"06:12","duhur":"12:01","ashar":"15:09","maghrib":"18:09","isya":"19:20"},"02-23":{"imsak":"04:23","shubuh":"04:33","terbit":"05:47","dhuha":"06:12","duhur":"12:01","ashar":"15:08","maghrib":"18:09","isya":"19:20"},"02-24":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:12","duhur":"12:00","ashar":"15:07","maghrib":"18:09","isya":"19:19"},"02-25":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:12","duhur":"12:00","ashar":"15:06","maghrib":"18:08","isya":"19:19"},"02-26":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:12","duhur":"12:00","ashar":"15:05","maghrib":"18:08","isya":"19:18"},"02-27":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:12","duhur":"12:00","ashar":"15:05","maghrib":"18:08","isya":"19:18"},"02-28":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:12","duhur":"12:00","ashar":"15:04","maghrib":"18:07","isya":"19:18"},"02-29":{"imsak":"04:24","shubuh":"04:34","terbit":"05:48","dhuha":"06:12","duhur":"12:00","ashar":"15:03","maghrib":"18:07","isya":"19:17"},"03-01":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:12","duhur":"12:00","ashar":"15:03","maghrib":"18:07","isya":"19:17"},"03-02":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:12","duhur":"11:59","ashar":"15:02","maghrib":"18:07","isya":"19:17"},"03-03":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:12","duhur":"11:59","ashar":"15:01","maghrib":"18:06","isya":"19:16"},"03-04":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:12","duhur":"11:59","ashar":"15:01","maghrib":"18:06","isya":"19:16"},"03-05":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:12","duhur":"11:59","ashar":"15:01","maghrib":"18:05","isya":"19:15"},"03-06":{"imsak":"04:25","shubuh":"04:35","terbit":"05:47","dhuha":"06:12","duhur":"11:59","ashar":"15:02","maghrib":"18:05","isya":"19:15"},"03-07":{"imsak":"04:25","shubuh":"04:35","terbit":"05:47","dhuha":"06:12","duhur":"11:58","ashar":"15:02","maghrib":"18:04","isya":"19:14"},"03-08":{"imsak":"04:25","shubuh":"04:35","terbit":"05:47","dhuha":"06:12","duhur":"11:58","ashar":"15:02","maghrib":"18:04","isya":"19:14"},"03-09":{"imsak":"04:25","shubuh":"04:35","terbit":"05:47","dhuha":"06:12","duhur":"11:58","ashar":"15:03","maghrib":"18:04","isya":"19:13"},"03-10":{"imsak":"04:25","shubuh":"04:35","terbit":"05:47","dhuha":"06:12","duhur":"11:58","ashar":"15:03","maghrib":"18:03","isya":"19:13"},"03-11":{"imsak":"04:25","shubuh":"04:35","terbit":"05:47","dhuha":"06:12","duhur":"11:57","ashar":"15:03","maghrib":"18:03","isya":"19:12"},"03-12":{"imsak":"04:25","shubuh":"04:35","terbit":"05:47","dhuha":"06:12","duhur":"11:57","ashar":"15:04","maghrib":"18:02","isya":"19:12"},"03-13":{"imsak":"04:25","shubuh":"04:35","terbit":"05:47","dhuha":"06:12","duhur":"11:57","ashar":"15:04","maghrib":"18:02","isya":"19:11"},"03-14":{"imsak":"04:25","shubuh":"04:35","terbit":"05:47","dhuha":"06:12","duhur":"11:57","ashar":"15:04","maghrib":"18:01","isya":"19:11"},"03-15":{"imsak":"04:25","shubuh":"04:35","terbit":"05:47","dhuha":"06:12","duhur":"11:56","ashar":"15:05","maghrib":"18:01","isya":"19:10"},"03-16":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:11","duhur":"11:56","ashar":"15:05","maghrib":"18:00","isya":"19:10"},"03-17":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:11","duhur":"11:56","ashar":"15:05","maghrib":"18:00","isya":"19:09"},"03-18":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:11","duhur":"11:55","ashar":"15:05","maghrib":"17:59","isya":"19:08"},"03-19":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:11","duhur":"11:55","ashar":"15:05","maghrib":"17:59","isya":"19:08"},"03-20":{"imsak":"04:24","shubuh":"04:34","terbit":"05:46","dhuha":"06:11","duhur":"11:55","ashar":"15:06","maghrib":"17:58","isya":"19:07"},"03-21":{"imsak":"04:24","shubuh":"04:34","terbit":"05:46","dhuha":"06:11","duhur":"11:55","ashar":"15:06","maghrib":"17:58","isya":"19:07"},"03-22":{"imsak":"04:24","shubuh":"04:34","terbit":"05:46","dhuha":"06:11","duhur":"11:54","ashar":"15:06","maghrib":"17:57","isya":"19:06"},"03-23":{"imsak":"04:24","shubuh":"04:34","terbit":"05:46","dhuha":"06:11","duhur":"11:54","ashar":"15:06","maghrib":"17:57","isya":"19:06"},"03-24":{"imsak":"04:24","shubuh":"04:34","terbit":"05:46","dhuha":"06:11","duhur":"11:54","ashar":"15:06","maghrib":"17:56","isya":"19:05"},"03-25":{"imsak":"04:24","shubuh":"04:34","terbit":"05:46","dhuha":"06:11","duhur":"11:53","ashar":"15:06","maghrib":"17:56","isya":"19:05"},"03-26":{"imsak":"04:24","shubuh":"04:34","terbit":"05:46","dhuha":"06:10","duhur":"11:53","ashar":"15:06","maghrib":"17:55","isya":"19:04"},"03-27":{"imsak":"04:24","shubuh":"04:34","terbit":"05:46","dhuha":"06:10","duhur":"11:53","ashar":"15:06","maghrib":"17:55","isya":"19:04"},"03-28":{"imsak":"04:23","shubuh":"04:33","terbit":"05:46","dhuha":"06:10","duhur":"11:52","ashar":"15:07","maghrib":"17:54","isya":"19:03"},"03-29":{"imsak":"04:23","shubuh":"04:33","terbit":"05:46","dhuha":"06:10","duhur":"11:52","ashar":"15:07","maghrib":"17:54","isya":"19:03"},"03-30":{"imsak":"04:23","shubuh":"04:33","terbit":"05:46","dhuha":"06:10","duhur":"11:52","ashar":"15:07","maghrib":"17:53","isya":"19:03"},"03-31":{"imsak":"04:23","shubuh":"04:33","terbit":"05:45","dhuha":"06:10","duhur":"11:51","ashar":"15:07","maghrib":"17:53","isya":"19:02"},"04-01":{"imsak":"04:23","shubuh":"04:33","terbit":"05:45","dhuha":"06:10","duhur":"11:51","ashar":"15:07","maghrib":"17:52","isya":"19:01"},"04-02":{"imsak":"04:23","shubuh":"04:33","terbit":"05:45","dhuha":"06:10","duhur":"11:51","ashar":"15:07","maghrib":"17:51","isya":"19:01"},"04-03":{"imsak":"04:23","shubuh":"04:33","terbit":"05:45","dhuha":"06:10","duhur":"11:51","ashar":"15:07","maghrib":"17:51","isya":"19:00"},"04-04":{"imsak":"04:23","shubuh":"04:33","terbit":"05:45","dhuha":"06:10","duhur":"11:50","ashar":"15:07","maghrib":"17:50","isya":"19:00"},"04-05":{"imsak":"04:23","shubuh":"04:33","terbit":"05:45","dhuha":"06:10","duhur":"11:50","ashar":"15:07","maghrib":"17:50","isya":"18:59"},"04-06":{"imsak":"04:22","shubuh":"04:32","terbit":"05:45","dhuha":"06:10","duhur":"11:50","ashar":"15:07","maghrib":"17:49","isya":"18:59"},"04-07":{"imsak":"04:22","shubuh":"04:32","terbit":"05:45","dhuha":"06:10","duhur":"11:49","ashar":"15:07","maghrib":"17:49","isya":"18:58"},"04-08":{"imsak":"04:22","shubuh":"04:32","terbit":"05:45","dhuha":"06:10","duhur":"11:49","ashar":"15:07","maghrib":"17:48","isya":"18:58"},"04-09":{"imsak":"04:22","shubuh":"04:32","terbit":"05:45","dhuha":"06:09","duhur":"11:49","ashar":"15:07","maghrib":"17:48","isya":"18:57"},"04-10":{"imsak":"04:22","shubuh":"04:32","terbit":"05:44","dhuha":"06:09","duhur":"11:48","ashar":"15:07","maghrib":"17:47","isya":"18:57"},"04-11":{"imsak":"04:22","shubuh":"04:32","terbit":"05:45","dhuha":"06:09","duhur":"11:48","ashar":"15:07","maghrib":"17:47","isya":"18:57"},"04-12":{"imsak":"04:22","shubuh":"04:32","terbit":"05:44","dhuha":"06:09","duhur":"11:48","ashar":"15:07","maghrib":"17:46","isya":"18:56"},"04-13":{"imsak":"04:21","shubuh":"04:31","terbit":"05:44","dhuha":"06:09","duhur":"11:48","ashar":"15:07","maghrib":"17:46","isya":"18:56"},"04-14":{"imsak":"04:21","shubuh":"04:31","terbit":"05:44","dhuha":"06:09","duhur":"11:47","ashar":"15:06","maghrib":"17:46","isya":"18:55"},"04-15":{"imsak":"04:21","shubuh":"04:31","terbit":"05:44","dhuha":"06:09","duhur":"11:47","ashar":"15:06","maghrib":"17:45","isya":"18:55"},"04-16":{"imsak":"04:21","shubuh":"04:31","terbit":"05:44","dhuha":"06:09","duhur":"11:47","ashar":"15:06","maghrib":"17:45","isya":"18:55"},"04-17":{"imsak":"04:21","shubuh":"04:31","terbit":"05:44","dhuha":"06:09","duhur":"11:47","ashar":"15:06","maghrib":"17:44","isya":"18:54"},"04-18":{"imsak":"04:21","shubuh":"04:31","terbit":"05:44","dhuha":"06:09","duhur":"11:46","ashar":"15:06","maghrib":"17:44","isya":"18:54"},"04-19":{"imsak":"04:21","shubuh":"04:31","terbit":"05:44","dhuha":"06:09","duhur":"11:46","ashar":"15:06","maghrib":"17:43","isya":"18:54"},"04-20":{"imsak":"04:21","shubuh":"04:31","terbit":"05:44","dhuha":"06:09","duhur":"11:46","ashar":"15:06","maghrib":"17:43","isya":"18:53"},"04-21":{"imsak":"04:20","shubuh":"04:30","terbit":"05:44","dhuha":"06:09","duhur":"11:46","ashar":"15:06","maghrib":"17:43","isya":"18:53"},"04-22":{"imsak":"04:20","shubuh":"04:30","terbit":"05:44","dhuha":"06:09","duhur":"11:46","ashar":"15:06","maghrib":"17:42","isya":"18:53"},"04-23":{"imsak":"04:20","shubuh":"04:30","terbit":"05:44","dhuha":"06:09","duhur":"11:45","ashar":"15:06","maghrib":"17:42","isya":"18:52"},"04-24":{"imsak":"04:20","shubuh":"04:30","terbit":"05:44","dhuha":"06:09","duhur":"11:45","ashar":"15:06","maghrib":"17:41","isya":"18:52"},"04-25":{"imsak":"04:20","shubuh":"04:30","terbit":"05:44","dhuha":"06:09","duhur":"11:45","ashar":"15:06","maghrib":"17:41","isya":"18:52"},"04-26":{"imsak":"04:20","shubuh":"04:30","terbit":"05:44","dhuha":"06:09","duhur":"11:45","ashar":"15:05","maghrib":"17:41","isya":"18:52"},"04-27":{"imsak":"04:20","shubuh":"04:30","terbit":"05:44","dhuha":"06:09","duhur":"11:45","ashar":"15:05","maghrib":"17:40","isya":"18:51"},"04-28":{"imsak":"04:20","shubuh":"04:30","terbit":"05:44","dhuha":"06:09","duhur":"11:45","ashar":"15:05","maghrib":"17:40","isya":"18:51"},"04-29":{"imsak":"04:20","shubuh":"04:30","terbit":"05:44","dhuha":"06:09","duhur":"11:44","ashar":"15:05","maghrib":"17:40","isya":"18:51"},"04-30":{"imsak":"04:20","shubuh":"04:30","terbit":"05:44","dhuha":"06:09","duhur":"11:44","ashar":"15:05","maghrib":"17:39","isya":"18:51"},"05-01":{"imsak":"04:19","shubuh":"04:29","terbit":"05:44","dhuha":"06:09","duhur":"11:44","ashar":"15:05","maghrib":"17:39","isya":"18:51"},"05-02":{"imsak":"04:19","shubuh":"04:29","terbit":"05:44","dhuha":"06:09","duhur":"11:44","ashar":"15:05","maghrib":"17:39","isya":"18:50"},"05-03":{"imsak":"04:19","shubuh":"04:29","terbit":"05:44","dhuha":"06:09","duhur":"11:44","ashar":"15:05","maghrib":"17:39","isya":"18:50"},"05-04":{"imsak":"04:19","shubuh":"04:29","terbit":"05:44","dhuha":"06:09","duhur":"11:44","ashar":"15:05","maghrib":"17:38","isya":"18:50"},"05-05":{"imsak":"04:19","shubuh":"04:29","terbit":"05:44","dhuha":"06:10","duhur":"11:44","ashar":"15:05","maghrib":"17:38","isya":"18:50"},"05-06":{"imsak":"04:19","shubuh":"04:29","terbit":"05:44","dhuha":"06:10","duhur":"11:44","ashar":"15:05","maghrib":"17:38","isya":"18:50"},"05-07":{"imsak":"04:19","shubuh":"04:29","terbit":"05:44","dhuha":"06:10","duhur":"11:43","ashar":"15:05","maghrib":"17:38","isya":"18:50"},"05-08":{"imsak":"04:19","shubuh":"04:29","terbit":"05:44","dhuha":"06:10","duhur":"11:43","ashar":"15:04","maghrib":"17:37","isya":"18:49"},"05-09":{"imsak":"04:19","shubuh":"04:29","terbit":"05:44","dhuha":"06:10","duhur":"11:43","ashar":"15:04","maghrib":"17:37","isya":"18:49"},"05-10":{"imsak":"04:19","shubuh":"04:29","terbit":"05:45","dhuha":"06:10","duhur":"11:43","ashar":"15:04","maghrib":"17:37","isya":"18:49"},"05-11":{"imsak":"04:19","shubuh":"04:29","terbit":"05:45","dhuha":"06:10","duhur":"11:43","ashar":"15:04","maghrib":"17:37","isya":"18:49"},"05-12":{"imsak":"04:19","shubuh":"04:29","terbit":"05:45","dhuha":"06:10","duhur":"11:43","ashar":"15:04","maghrib":"17:37","isya":"18:49"},"05-13":{"imsak":"04:19","shubuh":"04:29","terbit":"05:45","dhuha":"06:11","duhur":"11:43","ashar":"15:04","maghrib":"17:36","isya":"18:49"},"05-14":{"imsak":"04:19","shubuh":"04:29","terbit":"05:45","dhuha":"06:11","duhur":"11:43","ashar":"15:04","maghrib":"17:36","isya":"18:49"},"05-15":{"imsak":"04:19","shubuh":"04:29","terbit":"05:45","dhuha":"06:11","duhur":"11:43","ashar":"15:04","maghrib":"17:36","isya":"18:49"},"05-16":{"imsak":"04:19","shubuh":"04:29","terbit":"05:45","dhuha":"06:11","duhur":"11:43","ashar":"15:04","maghrib":"17:36","isya":"18:49"},"05-17":{"imsak":"04:19","shubuh":"04:29","terbit":"05:45","dhuha":"06:11","duhur":"11:43","ashar":"15:04","maghrib":"17:36","isya":"18:49"},"05-18":{"imsak":"04:19","shubuh":"04:29","terbit":"05:46","dhuha":"06:11","duhur":"11:43","ashar":"15:04","maghrib":"17:36","isya":"18:49"},"05-19":{"imsak":"04:19","shubuh":"04:29","terbit":"05:46","dhuha":"06:12","duhur":"11:43","ashar":"15:04","maghrib":"17:36","isya":"18:49"},"05-20":{"imsak":"04:19","shubuh":"04:29","terbit":"05:46","dhuha":"06:12","duhur":"11:43","ashar":"15:04","maghrib":"17:35","isya":"18:49"},"05-21":{"imsak":"04:19","shubuh":"04:29","terbit":"05:46","dhuha":"06:12","duhur":"11:43","ashar":"15:04","maghrib":"17:35","isya":"18:49"},"05-22":{"imsak":"04:19","shubuh":"04:29","terbit":"05:46","dhuha":"06:12","duhur":"11:43","ashar":"15:04","maghrib":"17:35","isya":"18:49"},"05-23":{"imsak":"04:20","shubuh":"04:30","terbit":"05:47","dhuha":"06:12","duhur":"11:43","ashar":"15:04","maghrib":"17:35","isya":"18:49"},"05-24":{"imsak":"04:20","shubuh":"04:30","terbit":"05:47","dhuha":"06:13","duhur":"11:44","ashar":"15:05","maghrib":"17:35","isya":"18:49"},"05-25":{"imsak":"04:20","shubuh":"04:30","terbit":"05:47","dhuha":"06:13","duhur":"11:44","ashar":"15:05","maghrib":"17:35","isya":"18:49"},"05-26":{"imsak":"04:20","shubuh":"04:30","terbit":"05:47","dhuha":"06:13","duhur":"11:44","ashar":"15:05","maghrib":"17:35","isya":"18:49"},"05-27":{"imsak":"04:20","shubuh":"04:30","terbit":"05:47","dhuha":"06:13","duhur":"11:44","ashar":"15:05","maghrib":"17:35","isya":"18:49"},"05-28":{"imsak":"04:20","shubuh":"04:30","terbit":"05:48","dhuha":"06:14","duhur":"11:44","ashar":"15:05","maghrib":"17:35","isya":"18:49"},"05-29":{"imsak":"04:20","shubuh":"04:30","terbit":"05:48","dhuha":"06:14","duhur":"11:44","ashar":"15:05","maghrib":"17:35","isya":"18:49"},"05-30":{"imsak":"04:20","shubuh":"04:30","terbit":"05:48","dhuha":"06:14","duhur":"11:44","ashar":"15:05","maghrib":"17:35","isya":"18:50"},"05-31":{"imsak":"04:21","shubuh":"04:31","terbit":"05:48","dhuha":"06:14","duhur":"11:44","ashar":"15:05","maghrib":"17:35","isya":"18:50"},"06-01":{"imsak":"04:21","shubuh":"04:31","terbit":"05:48","dhuha":"06:15","duhur":"11:44","ashar":"15:05","maghrib":"17:35","isya":"18:50"},"06-02":{"imsak":"04:21","shubuh":"04:31","terbit":"05:49","dhuha":"06:15","duhur":"11:45","ashar":"15:05","maghrib":"17:36","isya":"18:50"},"06-03":{"imsak":"04:21","shubuh":"04:31","terbit":"05:49","dhuha":"06:15","duhur":"11:45","ashar":"15:05","maghrib":"17:36","isya":"18:50"},"06-04":{"imsak":"04:21","shubuh":"04:31","terbit":"05:49","dhuha":"06:15","duhur":"11:45","ashar":"15:06","maghrib":"17:36","isya":"18:50"},"06-05":{"imsak":"04:21","shubuh":"04:31","terbit":"05:49","dhuha":"06:16","duhur":"11:45","ashar":"15:06","maghrib":"17:36","isya":"18:50"},"06-06":{"imsak":"04:21","shubuh":"04:31","terbit":"05:50","dhuha":"06:16","duhur":"11:45","ashar":"15:06","maghrib":"17:36","isya":"18:51"},"06-07":{"imsak":"04:22","shubuh":"04:32","terbit":"05:50","dhuha":"06:16","duhur":"11:45","ashar":"15:06","maghrib":"17:36","isya":"18:51"},"06-08":{"imsak":"04:22","shubuh":"04:32","terbit":"05:50","dhuha":"06:16","duhur":"11:46","ashar":"15:06","maghrib":"17:36","isya":"18:51"},"06-09":{"imsak":"04:22","shubuh":"04:32","terbit":"05:50","dhuha":"06:17","duhur":"11:46","ashar":"15:06","maghrib":"17:36","isya":"18:51"},"06-10":{"imsak":"04:22","shubuh":"04:32","terbit":"05:51","dhuha":"06:17","duhur":"11:46","ashar":"15:07","maghrib":"17:36","isya":"18:51"},"06-11":{"imsak":"04:22","shubuh":"04:32","terbit":"05:51","dhuha":"06:17","duhur":"11:46","ashar":"15:07","maghrib":"17:37","isya":"18:52"},"06-12":{"imsak":"04:23","shubuh":"04:33","terbit":"05:51","dhuha":"06:17","duhur":"11:46","ashar":"15:07","maghrib":"17:37","isya":"18:52"},"06-13":{"imsak":"04:23","shubuh":"04:33","terbit":"05:51","dhuha":"06:18","duhur":"11:47","ashar":"15:07","maghrib":"17:37","isya":"18:52"},"06-14":{"imsak":"04:23","shubuh":"04:33","terbit":"05:52","dhuha":"06:18","duhur":"11:47","ashar":"15:07","maghrib":"17:37","isya":"18:52"},"06-15":{"imsak":"04:23","shubuh":"04:33","terbit":"05:52","dhuha":"06:18","duhur":"11:47","ashar":"15:07","maghrib":"17:37","isya":"18:52"},"06-16":{"imsak":"04:23","shubuh":"04:33","terbit":"05:52","dhuha":"06:18","duhur":"11:47","ashar":"15:08","maghrib":"17:37","isya":"18:53"},"06-17":{"imsak":"04:24","shubuh":"04:34","terbit":"05:52","dhuha":"06:19","duhur":"11:47","ashar":"15:08","maghrib":"17:38","isya":"18:53"},"06-18":{"imsak":"04:24","shubuh":"04:34","terbit":"05:52","dhuha":"06:19","duhur":"11:48","ashar":"15:08","maghrib":"17:38","isya":"18:53"},"06-19":{"imsak":"04:24","shubuh":"04:34","terbit":"05:53","dhuha":"06:19","duhur":"11:48","ashar":"15:08","maghrib":"17:38","isya":"18:53"},"06-20":{"imsak":"04:24","shubuh":"04:34","terbit":"05:53","dhuha":"06:19","duhur":"11:48","ashar":"15:09","maghrib":"17:38","isya":"18:53"},"06-21":{"imsak":"04:25","shubuh":"04:35","terbit":"05:53","dhuha":"06:19","duhur":"11:48","ashar":"15:09","maghrib":"17:38","isya":"18:54"},"06-22":{"imsak":"04:25","shubuh":"04:35","terbit":"05:53","dhuha":"06:20","duhur":"11:48","ashar":"15:09","maghrib":"17:39","isya":"18:54"},"06-23":{"imsak":"04:25","shubuh":"04:35","terbit":"05:54","dhuha":"06:20","duhur":"11:49","ashar":"15:09","maghrib":"17:39","isya":"18:54"},"06-24":{"imsak":"04:25","shubuh":"04:35","terbit":"05:54","dhuha":"06:20","duhur":"11:49","ashar":"15:09","maghrib":"17:39","isya":"18:54"},"06-25":{"imsak":"04:25","shubuh":"04:35","terbit":"05:54","dhuha":"06:20","duhur":"11:49","ashar":"15:10","maghrib":"17:39","isya":"18:55"},"06-26":{"imsak":"04:26","shubuh":"04:36","terbit":"05:54","dhuha":"06:21","duhur":"11:49","ashar":"15:10","maghrib":"17:40","isya":"18:55"},"06-27":{"imsak":"04:26","shubuh":"04:36","terbit":"05:54","dhuha":"06:21","duhur":"11:50","ashar":"15:10","maghrib":"17:40","isya":"18:55"},"06-28":{"imsak":"04:26","shubuh":"04:36","terbit":"05:55","dhuha":"06:21","duhur":"11:50","ashar":"15:10","maghrib":"17:40","isya":"18:55"},"06-29":{"imsak":"04:26","shubuh":"04:36","terbit":"05:55","dhuha":"06:21","duhur":"11:50","ashar":"15:11","maghrib":"17:40","isya":"18:55"},"06-30":{"imsak":"04:26","shubuh":"04:36","terbit":"05:55","dhuha":"06:21","duhur":"11:50","ashar":"15:11","maghrib":"17:41","isya":"18:56"},"07-01":{"imsak":"04:27","shubuh":"04:37","terbit":"05:55","dhuha":"06:21","duhur":"11:50","ashar":"15:11","maghrib":"17:41","isya":"18:56"},"07-02":{"imsak":"04:27","shubuh":"04:37","terbit":"05:55","dhuha":"06:22","duhur":"11:51","ashar":"15:11","maghrib":"17:41","isya":"18:56"},"07-03":{"imsak":"04:27","shubuh":"04:37","terbit":"05:55","dhuha":"06:22","duhur":"11:51","ashar":"15:11","maghrib":"17:41","isya":"18:56"},"07-04":{"imsak":"04:27","shubuh":"04:37","terbit":"05:56","dhuha":"06:22","duhur":"11:51","ashar":"15:12","maghrib":"17:41","isya":"18:56"},"07-05":{"imsak":"04:27","shubuh":"04:37","terbit":"05:56","dhuha":"06:22","duhur":"11:51","ashar":"15:12","maghrib":"17:42","isya":"18:57"},"07-06":{"imsak":"04:28","shubuh":"04:38","terbit":"05:56","dhuha":"06:22","duhur":"11:51","ashar":"15:12","maghrib":"17:42","isya":"18:57"},"07-07":{"imsak":"04:28","shubuh":"04:38","terbit":"05:56","dhuha":"06:22","duhur":"11:51","ashar":"15:12","maghrib":"17:42","isya":"18:57"},"07-08":{"imsak":"04:28","shubuh":"04:38","terbit":"05:56","dhuha":"06:22","duhur":"11:52","ashar":"15:12","maghrib":"17:42","isya":"18:57"},"07-09":{"imsak":"04:28","shubuh":"04:38","terbit":"05:56","dhuha":"06:22","duhur":"11:52","ashar":"15:12","maghrib":"17:43","isya":"18:57"},"07-10":{"imsak":"04:28","shubuh":"04:38","terbit":"05:56","dhuha":"06:22","duhur":"11:52","ashar":"15:13","maghrib":"17:43","isya":"18:57"},"07-11":{"imsak":"04:28","shubuh":"04:38","terbit":"05:56","dhuha":"06:22","duhur":"11:52","ashar":"15:13","maghrib":"17:43","isya":"18:58"},"07-12":{"imsak":"04:28","shubuh":"04:38","terbit":"05:56","dhuha":"06:22","duhur":"11:52","ashar":"15:13","maghrib":"17:43","isya":"18:58"},"07-13":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:52","ashar":"15:13","maghrib":"17:43","isya":"18:58"},"07-14":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:52","ashar":"15:13","maghrib":"17:44","isya":"18:58"},"07-15":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:53","ashar":"15:13","maghrib":"17:44","isya":"18:58"},"07-16":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:53","ashar":"15:14","maghrib":"17:44","isya":"18:58"},"07-17":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:53","ashar":"15:14","maghrib":"17:44","isya":"18:58"},"07-18":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:53","ashar":"15:14","maghrib":"17:44","isya":"18:58"},"07-19":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:53","ashar":"15:14","maghrib":"17:45","isya":"18:58"},"07-20":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:53","ashar":"15:14","maghrib":"17:45","isya":"18:59"},"07-21":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:53","ashar":"15:14","maghrib":"17:45","isya":"18:59"},"07-22":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:53","ashar":"15:14","maghrib":"17:45","isya":"18:59"},"07-23":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:53","ashar":"15:14","maghrib":"17:45","isya":"18:59"},"07-24":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:53","ashar":"15:14","maghrib":"17:45","isya":"18:59"},"07-25":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:53","ashar":"15:14","maghrib":"17:46","isya":"18:59"},"07-26":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:22","duhur":"11:53","ashar":"15:14","maghrib":"17:46","isya":"18:59"},"07-27":{"imsak":"04:29","shubuh":"04:39","terbit":"05:56","dhuha":"06:21","duhur":"11:53","ashar":"15:14","maghrib":"17:46","isya":"18:59"},"07-28":{"imsak":"04:29","shubuh":"04:39","terbit":"05:55","dhuha":"06:21","duhur":"11:53","ashar":"15:14","maghrib":"17:46","isya":"18:59"},"07-29":{"imsak":"04:29","shubuh":"04:39","terbit":"05:55","dhuha":"06:21","duhur":"11:53","ashar":"15:14","maghrib":"17:46","isya":"18:59"},"07-30":{"imsak":"04:29","shubuh":"04:39","terbit":"05:55","dhuha":"06:21","duhur":"11:53","ashar":"15:14","maghrib":"17:46","isya":"18:59"},"07-31":{"imsak":"04:29","shubuh":"04:39","terbit":"05:55","dhuha":"06:21","duhur":"11:53","ashar":"15:14","maghrib":"17:46","isya":"18:59"},"08-01":{"imsak":"04:29","shubuh":"04:39","terbit":"05:55","dhuha":"06:21","duhur":"11:53","ashar":"15:14","maghrib":"17:46","isya":"18:59"},"08-02":{"imsak":"04:29","shubuh":"04:39","terbit":"05:55","dhuha":"06:20","duhur":"11:53","ashar":"15:14","maghrib":"17:46","isya":"18:59"},"08-03":{"imsak":"04:29","shubuh":"04:39","terbit":"05:55","dhuha":"06:20","duhur":"11:53","ashar":"15:14","maghrib":"17:47","isya":"18:59"},"08-04":{"imsak":"04:29","shubuh":"04:39","terbit":"05:54","dhuha":"06:20","duhur":"11:53","ashar":"15:14","maghrib":"17:47","isya":"18:59"},"08-05":{"imsak":"04:29","shubuh":"04:39","terbit":"05:54","dhuha":"06:20","duhur":"11:53","ashar":"15:14","maghrib":"17:47","isya":"18:59"},"08-06":{"imsak":"04:29","shubuh":"04:39","terbit":"05:54","dhuha":"06:19","duhur":"11:53","ashar":"15:14","maghrib":"17:47","isya":"18:59"},"08-07":{"imsak":"04:28","shubuh":"04:38","terbit":"05:54","dhuha":"06:19","duhur":"11:53","ashar":"15:14","maghrib":"17:47","isya":"18:59"},"08-08":{"imsak":"04:28","shubuh":"04:38","terbit":"05:53","dhuha":"06:19","duhur":"11:53","ashar":"15:14","maghrib":"17:47","isya":"18:59"},"08-09":{"imsak":"04:28","shubuh":"04:38","terbit":"05:53","dhuha":"06:18","duhur":"11:52","ashar":"15:13","maghrib":"17:47","isya":"18:59"},"08-10":{"imsak":"04:28","shubuh":"04:38","terbit":"05:53","dhuha":"06:18","duhur":"11:52","ashar":"15:13","maghrib":"17:47","isya":"18:59"},"08-11":{"imsak":"04:28","shubuh":"04:38","terbit":"05:52","dhuha":"06:18","duhur":"11:52","ashar":"15:13","maghrib":"17:47","isya":"18:58"},"08-12":{"imsak":"04:27","shubuh":"04:37","terbit":"05:52","dhuha":"06:17","duhur":"11:52","ashar":"15:13","maghrib":"17:47","isya":"18:58"},"08-13":{"imsak":"04:27","shubuh":"04:37","terbit":"05:52","dhuha":"06:17","duhur":"11:52","ashar":"15:13","maghrib":"17:47","isya":"18:58"},"08-14":{"imsak":"04:27","shubuh":"04:37","terbit":"05:51","dhuha":"06:17","duhur":"11:52","ashar":"15:12","maghrib":"17:47","isya":"18:58"},"08-15":{"imsak":"04:27","shubuh":"04:37","terbit":"05:51","dhuha":"06:16","duhur":"11:51","ashar":"15:12","maghrib":"17:47","isya":"18:58"},"08-16":{"imsak":"04:26","shubuh":"04:36","terbit":"05:51","dhuha":"06:16","duhur":"11:51","ashar":"15:12","maghrib":"17:47","isya":"18:58"},"08-17":{"imsak":"04:26","shubuh":"04:36","terbit":"05:50","dhuha":"06:15","duhur":"11:51","ashar":"15:12","maghrib":"17:47","isya":"18:58"},"08-18":{"imsak":"04:26","shubuh":"04:36","terbit":"05:50","dhuha":"06:15","duhur":"11:51","ashar":"15:11","maghrib":"17:47","isya":"18:58"},"08-19":{"imsak":"04:26","shubuh":"04:36","terbit":"05:49","dhuha":"06:15","duhur":"11:51","ashar":"15:11","maghrib":"17:47","isya":"18:58"},"08-20":{"imsak":"04:25","shubuh":"04:35","terbit":"05:49","dhuha":"06:14","duhur":"11:50","ashar":"15:11","maghrib":"17:47","isya":"18:57"},"08-21":{"imsak":"04:25","shubuh":"04:35","terbit":"05:49","dhuha":"06:14","duhur":"11:50","ashar":"15:10","maghrib":"17:47","isya":"18:57"},"08-22":{"imsak":"04:25","shubuh":"04:35","terbit":"05:48","dhuha":"06:13","duhur":"11:50","ashar":"15:10","maghrib":"17:47","isya":"18:57"},"08-23":{"imsak":"04:24","shubuh":"04:34","terbit":"05:48","dhuha":"06:13","duhur":"11:50","ashar":"15:10","maghrib":"17:47","isya":"18:57"},"08-24":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:12","duhur":"11:49","ashar":"15:09","maghrib":"17:47","isya":"18:57"},"08-25":{"imsak":"04:24","shubuh":"04:34","terbit":"05:47","dhuha":"06:12","duhur":"11:49","ashar":"15:09","maghrib":"17:47","isya":"18:57"},"08-26":{"imsak":"04:23","shubuh":"04:33","terbit":"05:46","dhuha":"06:11","duhur":"11:49","ashar":"15:08","maghrib":"17:46","isya":"18:57"},"08-27":{"imsak":"04:23","shubuh":"04:33","terbit":"05:46","dhuha":"06:11","duhur":"11:49","ashar":"15:08","maghrib":"17:46","isya":"18:56"},"08-28":{"imsak":"04:22","shubuh":"04:32","terbit":"05:45","dhuha":"06:10","duhur":"11:48","ashar":"15:08","maghrib":"17:46","isya":"18:56"},"08-29":{"imsak":"04:22","shubuh":"04:32","terbit":"05:45","dhuha":"06:10","duhur":"11:48","ashar":"15:07","maghrib":"17:46","isya":"18:56"},"08-30":{"imsak":"04:22","shubuh":"04:32","terbit":"05:44","dhuha":"06:09","duhur":"11:48","ashar":"15:07","maghrib":"17:46","isya":"18:56"},"08-31":{"imsak":"04:21","shubuh":"04:31","terbit":"05:44","dhuha":"06:09","duhur":"11:47","ashar":"15:06","maghrib":"17:46","isya":"18:56"},"09-01":{"imsak":"04:21","shubuh":"04:31","terbit":"05:44","dhuha":"06:08","duhur":"11:47","ashar":"15:06","maghrib":"17:46","isya":"18:55"},"09-02":{"imsak":"04:20","shubuh":"04:30","terbit":"05:43","dhuha":"06:08","duhur":"11:47","ashar":"15:05","maghrib":"17:46","isya":"18:55"},"09-03":{"imsak":"04:20","shubuh":"04:30","terbit":"05:43","dhuha":"06:07","duhur":"11:47","ashar":"15:05","maghrib":"17:45","isya":"18:55"},"09-04":{"imsak":"04:19","shubuh":"04:29","terbit":"05:42","dhuha":"06:07","duhur":"11:46","ashar":"15:04","maghrib":"17:45","isya":"18:55"},"09-05":{"imsak":"04:19","shubuh":"04:29","terbit":"05:42","dhuha":"06:06","duhur":"11:46","ashar":"15:04","maghrib":"17:45","isya":"18:55"},"09-06":{"imsak":"04:18","shubuh":"04:28","terbit":"05:41","dhuha":"06:06","duhur":"11:46","ashar":"15:03","maghrib":"17:45","isya":"18:55"},"09-07":{"imsak":"04:18","shubuh":"04:28","terbit":"05:40","dhuha":"06:05","duhur":"11:45","ashar":"15:02","maghrib":"17:45","isya":"18:54"},"09-08":{"imsak":"04:18","shubuh":"04:28","terbit":"05:40","dhuha":"06:05","duhur":"11:45","ashar":"15:02","maghrib":"17:45","isya":"18:54"},"09-09":{"imsak":"04:17","shubuh":"04:27","terbit":"05:39","dhuha":"06:04","duhur":"11:45","ashar":"15:01","maghrib":"17:45","isya":"18:54"},"09-10":{"imsak":"04:17","shubuh":"04:27","terbit":"05:39","dhuha":"06:04","duhur":"11:44","ashar":"15:01","maghrib":"17:45","isya":"18:54"},"09-11":{"imsak":"04:16","shubuh":"04:26","terbit":"05:38","dhuha":"06:03","duhur":"11:44","ashar":"15:00","maghrib":"17:44","isya":"18:54"},"09-12":{"imsak":"04:15","shubuh":"04:25","terbit":"05:38","dhuha":"06:02","duhur":"11:43","ashar":"14:59","maghrib":"17:44","isya":"18:53"},"09-13":{"imsak":"04:15","shubuh":"04:25","terbit":"05:37","dhuha":"06:02","duhur":"11:43","ashar":"14:59","maghrib":"17:44","isya":"18:53"},"09-14":{"imsak":"04:14","shubuh":"04:24","terbit":"05:37","dhuha":"06:01","duhur":"11:43","ashar":"14:58","maghrib":"17:44","isya":"18:53"},"09-15":{"imsak":"04:14","shubuh":"04:24","terbit":"05:36","dhuha":"06:01","duhur":"11:42","ashar":"14:57","maghrib":"17:44","isya":"18:53"},"09-16":{"imsak":"04:13","shubuh":"04:23","terbit":"05:36","dhuha":"06:00","duhur":"11:42","ashar":"14:57","maghrib":"17:44","isya":"18:53"},"09-17":{"imsak":"04:13","shubuh":"04:23","terbit":"05:35","dhuha":"06:00","duhur":"11:42","ashar":"14:56","maghrib":"17:43","isya":"18:53"},"09-18":{"imsak":"04:12","shubuh":"04:22","terbit":"05:34","dhuha":"05:59","duhur":"11:41","ashar":"14:55","maghrib":"17:43","isya":"18:52"},"09-19":{"imsak":"04:12","shubuh":"04:22","terbit":"05:34","dhuha":"05:58","duhur":"11:41","ashar":"14:54","maghrib":"17:43","isya":"18:52"},"09-20":{"imsak":"04:11","shubuh":"04:21","terbit":"05:33","dhuha":"05:58","duhur":"11:41","ashar":"14:54","maghrib":"17:43","isya":"18:52"},"09-21":{"imsak":"04:11","shubuh":"04:21","terbit":"05:33","dhuha":"05:58","duhur":"11:40","ashar":"14:53","maghrib":"17:43","isya":"18:52"},"09-22":{"imsak":"04:10","shubuh":"04:20","terbit":"05:32","dhuha":"05:57","duhur":"11:40","ashar":"14:52","maghrib":"17:43","isya":"18:52"},"09-23":{"imsak":"04:09","shubuh":"04:19","terbit":"05:32","dhuha":"05:56","duhur":"11:40","ashar":"14:51","maghrib":"17:43","isya":"18:52"},"09-24":{"imsak":"04:09","shubuh":"04:19","terbit":"05:31","dhuha":"05:56","duhur":"11:39","ashar":"14:51","maghrib":"17:42","isya":"18:52"},"09-25":{"imsak":"04:08","shubuh":"04:18","terbit":"05:31","dhuha":"05:55","duhur":"11:39","ashar":"14:50","maghrib":"17:42","isya":"18:51"},"09-26":{"imsak":"04:08","shubuh":"04:18","terbit":"05:30","dhuha":"05:55","duhur":"11:39","ashar":"14:49","maghrib":"17:42","isya":"18:51"},"09-27":{"imsak":"04:07","shubuh":"04:17","terbit":"05:29","dhuha":"05:54","duhur":"11:38","ashar":"14:48","maghrib":"17:42","isya":"18:51"},"09-28":{"imsak":"04:07","shubuh":"04:17","terbit":"05:29","dhuha":"05:54","duhur":"11:38","ashar":"14:47","maghrib":"17:42","isya":"18:51"},"09-29":{"imsak":"04:06","shubuh":"04:16","terbit":"05:28","dhuha":"05:53","duhur":"11:38","ashar":"14:46","maghrib":"17:42","isya":"18:51"},"09-30":{"imsak":"04:05","shubuh":"04:15","terbit":"05:28","dhuha":"05:52","duhur":"11:37","ashar":"14:46","maghrib":"17:42","isya":"18:51"},"10-01":{"imsak":"04:05","shubuh":"04:15","terbit":"05:27","dhuha":"05:52","duhur":"11:37","ashar":"14:45","maghrib":"17:41","isya":"18:51"},"10-02":{"imsak":"04:05","shubuh":"04:15","terbit":"05:27","dhuha":"05:52","duhur":"11:37","ashar":"14:44","maghrib":"17:41","isya":"18:51"},"10-03":{"imsak":"04:04","shubuh":"04:14","terbit":"05:26","dhuha":"05:51","duhur":"11:36","ashar":"14:43","maghrib":"17:41","isya":"18:50"},"10-04":{"imsak":"04:03","shubuh":"04:13","terbit":"05:26","dhuha":"05:51","duhur":"11:36","ashar":"14:43","maghrib":"17:41","isya":"18:50"},"10-05":{"imsak":"04:03","shubuh":"04:13","terbit":"05:25","dhuha":"05:50","duhur":"11:36","ashar":"14:42","maghrib":"17:41","isya":"18:50"},"10-06":{"imsak":"04:02","shubuh":"04:12","terbit":"05:25","dhuha":"05:50","duhur":"11:35","ashar":"14:41","maghrib":"17:41","isya":"18:50"},"10-07":{"imsak":"04:02","shubuh":"04:12","terbit":"05:24","dhuha":"05:49","duhur":"11:35","ashar":"14:40","maghrib":"17:41","isya":"18:50"},"10-08":{"imsak":"04:01","shubuh":"04:11","terbit":"05:24","dhuha":"05:49","duhur":"11:35","ashar":"14:39","maghrib":"17:41","isya":"18:50"},"10-09":{"imsak":"04:01","shubuh":"04:11","terbit":"05:23","dhuha":"05:48","duhur":"11:34","ashar":"14:38","maghrib":"17:41","isya":"18:50"},"10-10":{"imsak":"04:00","shubuh":"04:10","terbit":"05:23","dhuha":"05:48","duhur":"11:34","ashar":"14:37","maghrib":"17:40","isya":"18:50"},"10-11":{"imsak":"04:00","shubuh":"04:10","terbit":"05:22","dhuha":"05:47","duhur":"11:34","ashar":"14:36","maghrib":"17:40","isya":"18:50"},"10-12":{"imsak":"03:59","shubuh":"04:09","terbit":"05:22","dhuha":"05:47","duhur":"11:34","ashar":"14:35","maghrib":"17:40","isya":"18:50"},"10-13":{"imsak":"03:58","shubuh":"04:08","terbit":"05:22","dhuha":"05:46","duhur":"11:33","ashar":"14:35","maghrib":"17:40","isya":"18:50"},"10-14":{"imsak":"03:58","shubuh":"04:08","terbit":"05:21","dhuha":"05:46","duhur":"11:33","ashar":"14:35","maghrib":"17:40","isya":"18:50"},"10-15":{"imsak":"03:57","shubuh":"04:07","terbit":"05:21","dhuha":"05:46","duhur":"11:33","ashar":"14:36","maghrib":"17:40","isya":"18:50"},"10-16":{"imsak":"03:57","shubuh":"04:07","terbit":"05:20","dhuha":"05:45","duhur":"11:33","ashar":"14:36","maghrib":"17:40","isya":"18:50"},"10-17":{"imsak":"03:56","shubuh":"04:06","terbit":"05:20","dhuha":"05:45","duhur":"11:33","ashar":"14:37","maghrib":"17:40","isya":"18:51"},"10-18":{"imsak":"03:56","shubuh":"04:06","terbit":"05:19","dhuha":"05:44","duhur":"11:32","ashar":"14:38","maghrib":"17:40","isya":"18:51"},"10-19":{"imsak":"03:55","shubuh":"04:05","terbit":"05:19","dhuha":"05:44","duhur":"11:32","ashar":"14:38","maghrib":"17:40","isya":"18:51"},"10-20":{"imsak":"03:55","shubuh":"04:05","terbit":"05:19","dhuha":"05:44","duhur":"11:32","ashar":"14:39","maghrib":"17:40","isya":"18:51"},"10-21":{"imsak":"03:55","shubuh":"04:05","terbit":"05:18","dhuha":"05:43","duhur":"11:32","ashar":"14:39","maghrib":"17:40","isya":"18:51"},"10-22":{"imsak":"03:54","shubuh":"04:04","terbit":"05:18","dhuha":"05:43","duhur":"11:32","ashar":"14:40","maghrib":"17:40","isya":"18:51"},"10-23":{"imsak":"03:54","shubuh":"04:04","terbit":"05:18","dhuha":"05:43","duhur":"11:31","ashar":"14:40","maghrib":"17:40","isya":"18:51"},"10-24":{"imsak":"03:53","shubuh":"04:03","terbit":"05:17","dhuha":"05:42","duhur":"11:31","ashar":"14:41","maghrib":"17:40","isya":"18:51"},"10-25":{"imsak":"03:53","shubuh":"04:03","terbit":"05:17","dhuha":"05:42","duhur":"11:31","ashar":"14:41","maghrib":"17:40","isya":"18:52"},"10-26":{"imsak":"03:52","shubuh":"04:02","terbit":"05:17","dhuha":"05:42","duhur":"11:31","ashar":"14:42","maghrib":"17:40","isya":"18:52"},"10-27":{"imsak":"03:52","shubuh":"04:02","terbit":"05:16","dhuha":"05:41","duhur":"11:31","ashar":"14:42","maghrib":"17:41","isya":"18:52"},"10-28":{"imsak":"03:52","shubuh":"04:01","terbit":"05:16","dhuha":"05:41","duhur":"11:31","ashar":"14:43","maghrib":"17:41","isya":"18:52"},"10-29":{"imsak":"03:51","shubuh":"04:01","terbit":"05:16","dhuha":"05:41","duhur":"11:31","ashar":"14:43","maghrib":"17:41","isya":"18:52"},"10-30":{"imsak":"03:51","shubuh":"04:01","terbit":"05:16","dhuha":"05:41","duhur":"11:31","ashar":"14:44","maghrib":"17:41","isya":"18:53"},"10-31":{"imsak":"03:50","shubuh":"04:00","terbit":"05:15","dhuha":"05:41","duhur":"11:31","ashar":"14:44","maghrib":"17:41","isya":"18:53"},"11-01":{"imsak":"03:50","shubuh":"04:00","terbit":"05:15","dhuha":"05:40","duhur":"11:31","ashar":"14:45","maghrib":"17:41","isya":"18:53"},"11-02":{"imsak":"03:50","shubuh":"04:00","terbit":"05:15","dhuha":"05:40","duhur":"11:31","ashar":"14:45","maghrib":"17:41","isya":"18:53"},"11-03":{"imsak":"03:49","shubuh":"03:59","terbit":"05:15","dhuha":"05:40","duhur":"11:31","ashar":"14:46","maghrib":"17:41","isya":"18:54"},"11-04":{"imsak":"03:49","shubuh":"03:59","terbit":"05:15","dhuha":"05:40","duhur":"11:31","ashar":"14:46","maghrib":"17:42","isya":"18:54"},"11-05":{"imsak":"03:49","shubuh":"03:59","terbit":"05:14","dhuha":"05:40","duhur":"11:31","ashar":"14:47","maghrib":"17:42","isya":"18:54"},"11-06":{"imsak":"03:48","shubuh":"03:58","terbit":"05:14","dhuha":"05:40","duhur":"11:31","ashar":"14:47","maghrib":"17:42","isya":"18:55"},"11-07":{"imsak":"03:48","shubuh":"03:58","terbit":"05:14","dhuha":"05:40","duhur":"11:31","ashar":"14:48","maghrib":"17:42","isya":"18:55"},"11-08":{"imsak":"03:48","shubuh":"03:58","terbit":"05:14","dhuha":"05:39","duhur":"11:31","ashar":"14:48","maghrib":"17:42","isya":"18:55"},"11-09":{"imsak":"03:48","shubuh":"03:58","terbit":"05:14","dhuha":"05:39","duhur":"11:31","ashar":"14:49","maghrib":"17:43","isya":"18:56"},"11-10":{"imsak":"03:47","shubuh":"03:57","terbit":"05:14","dhuha":"05:39","duhur":"11:31","ashar":"14:49","maghrib":"17:43","isya":"18:56"},"11-11":{"imsak":"03:47","shubuh":"03:57","terbit":"05:14","dhuha":"05:39","duhur":"11:31","ashar":"14:50","maghrib":"17:43","isya":"18:56"},"11-12":{"imsak":"03:47","shubuh":"03:57","terbit":"05:14","dhuha":"05:39","duhur":"11:31","ashar":"14:50","maghrib":"17:43","isya":"18:57"},"11-13":{"imsak":"03:47","shubuh":"03:57","terbit":"05:14","dhuha":"05:39","duhur":"11:31","ashar":"14:51","maghrib":"17:44","isya":"18:57"},"11-14":{"imsak":"03:47","shubuh":"03:57","terbit":"05:14","dhuha":"05:39","duhur":"11:31","ashar":"14:51","maghrib":"17:44","isya":"18:58"},"11-15":{"imsak":"03:47","shubuh":"03:57","terbit":"05:14","dhuha":"05:39","duhur":"11:32","ashar":"14:52","maghrib":"17:44","isya":"18:58"},"11-16":{"imsak":"03:46","shubuh":"03:56","terbit":"05:14","dhuha":"05:39","duhur":"11:32","ashar":"14:53","maghrib":"17:45","isya":"18:59"},"11-17":{"imsak":"03:46","shubuh":"03:56","terbit":"05:14","dhuha":"05:39","duhur":"11:32","ashar":"14:53","maghrib":"17:45","isya":"18:59"},"11-18":{"imsak":"03:46","shubuh":"03:56","terbit":"05:14","dhuha":"05:40","duhur":"11:32","ashar":"14:54","maghrib":"17:45","isya":"18:59"},"11-19":{"imsak":"03:46","shubuh":"03:56","terbit":"05:14","dhuha":"05:40","duhur":"11:32","ashar":"14:54","maghrib":"17:46","isya":"19:00"},"11-20":{"imsak":"03:46","shubuh":"03:56","terbit":"05:14","dhuha":"05:40","duhur":"11:33","ashar":"14:55","maghrib":"17:46","isya":"19:00"},"11-21":{"imsak":"03:46","shubuh":"03:56","terbit":"05:14","dhuha":"05:40","duhur":"11:33","ashar":"14:55","maghrib":"17:46","isya":"19:01"},"11-22":{"imsak":"03:46","shubuh":"03:56","terbit":"05:14","dhuha":"05:40","duhur":"11:33","ashar":"14:56","maghrib":"17:47","isya":"19:01"},"11-23":{"imsak":"03:46","shubuh":"03:56","terbit":"05:14","dhuha":"05:40","duhur":"11:33","ashar":"14:56","maghrib":"17:47","isya":"19:02"},"11-24":{"imsak":"03:46","shubuh":"03:56","terbit":"05:15","dhuha":"05:40","duhur":"11:34","ashar":"14:57","maghrib":"17:48","isya":"19:02"},"11-25":{"imsak":"03:46","shubuh":"03:56","terbit":"05:15","dhuha":"05:41","duhur":"11:34","ashar":"14:57","maghrib":"17:48","isya":"19:03"},"11-26":{"imsak":"03:46","shubuh":"03:56","terbit":"05:15","dhuha":"05:41","duhur":"11:34","ashar":"14:58","maghrib":"17:48","isya":"19:04"},"11-27":{"imsak":"03:46","shubuh":"03:56","terbit":"05:15","dhuha":"05:41","duhur":"11:34","ashar":"14:58","maghrib":"17:49","isya":"19:04"},"11-28":{"imsak":"03:46","shubuh":"03:56","terbit":"05:15","dhuha":"05:41","duhur":"11:35","ashar":"14:59","maghrib":"17:49","isya":"19:05"},"11-29":{"imsak":"03:47","shubuh":"03:57","terbit":"05:16","dhuha":"05:42","duhur":"11:35","ashar":"15:00","maghrib":"17:50","isya":"19:05"},"11-30":{"imsak":"03:47","shubuh":"03:57","terbit":"05:16","dhuha":"05:42","duhur":"11:35","ashar":"15:00","maghrib":"17:50","isya":"19:06"},"12-01":{"imsak":"03:47","shubuh":"03:57","terbit":"05:16","dhuha":"05:42","duhur":"11:36","ashar":"15:01","maghrib":"17:51","isya":"19:06"},"12-02":{"imsak":"03:47","shubuh":"03:57","terbit":"05:16","dhuha":"05:42","duhur":"11:36","ashar":"15:01","maghrib":"17:51","isya":"19:07"},"12-03":{"imsak":"03:47","shubuh":"03:57","terbit":"05:17","dhuha":"05:43","duhur":"11:37","ashar":"15:02","maghrib":"17:52","isya":"19:08"},"12-04":{"imsak":"03:47","shubuh":"03:57","terbit":"05:17","dhuha":"05:43","duhur":"11:37","ashar":"15:02","maghrib":"17:52","isya":"19:08"},"12-05":{"imsak":"03:48","shubuh":"03:58","terbit":"05:17","dhuha":"05:43","duhur":"11:37","ashar":"15:03","maghrib":"17:53","isya":"19:09"},"12-06":{"imsak":"03:48","shubuh":"03:58","terbit":"05:18","dhuha":"05:44","duhur":"11:38","ashar":"15:03","maghrib":"17:53","isya":"19:09"},"12-07":{"imsak":"03:48","shubuh":"03:58","terbit":"05:18","dhuha":"05:44","duhur":"11:38","ashar":"15:04","maghrib":"17:53","isya":"19:10"},"12-08":{"imsak":"03:48","shubuh":"03:58","terbit":"05:18","dhuha":"05:44","duhur":"11:39","ashar":"15:05","maghrib":"17:54","isya":"19:10"},"12-09":{"imsak":"03:49","shubuh":"03:59","terbit":"05:19","dhuha":"05:45","duhur":"11:39","ashar":"15:05","maghrib":"17:54","isya":"19:11"},"12-10":{"imsak":"03:49","shubuh":"03:59","terbit":"05:19","dhuha":"05:45","duhur":"11:40","ashar":"15:06","maghrib":"17:55","isya":"19:11"},"12-11":{"imsak":"03:49","shubuh":"03:59","terbit":"05:19","dhuha":"05:46","duhur":"11:40","ashar":"15:06","maghrib":"17:56","isya":"19:12"},"12-12":{"imsak":"03:50","shubuh":"04:00","terbit":"05:20","dhuha":"05:46","duhur":"11:40","ashar":"15:07","maghrib":"17:56","isya":"19:13"},"12-13":{"imsak":"03:50","shubuh":"04:00","terbit":"05:20","dhuha":"05:46","duhur":"11:41","ashar":"15:07","maghrib":"17:57","isya":"19:13"},"12-14":{"imsak":"03:51","shubuh":"04:01","terbit":"05:21","dhuha":"05:47","duhur":"11:42","ashar":"15:08","maghrib":"17:57","isya":"19:14"},"12-15":{"imsak":"03:51","shubuh":"04:01","terbit":"05:21","dhuha":"05:47","duhur":"11:42","ashar":"15:08","maghrib":"17:58","isya":"19:14"},"12-16":{"imsak":"03:51","shubuh":"04:01","terbit":"05:22","dhuha":"05:48","duhur":"11:42","ashar":"15:09","maghrib":"17:58","isya":"19:15"},"12-17":{"imsak":"03:52","shubuh":"04:02","terbit":"05:22","dhuha":"05:48","duhur":"11:43","ashar":"15:10","maghrib":"17:59","isya":"19:15"},"12-18":{"imsak":"03:52","shubuh":"04:02","terbit":"05:23","dhuha":"05:49","duhur":"11:43","ashar":"15:10","maghrib":"17:59","isya":"19:16"},"12-19":{"imsak":"03:53","shubuh":"04:03","terbit":"05:23","dhuha":"05:49","duhur":"11:44","ashar":"15:11","maghrib":"18:00","isya":"19:16"},"12-20":{"imsak":"03:53","shubuh":"04:03","terbit":"05:23","dhuha":"05:50","duhur":"11:44","ashar":"15:11","maghrib":"18:00","isya":"19:17"},"12-21":{"imsak":"03:54","shubuh":"04:04","terbit":"05:24","dhuha":"05:50","duhur":"11:45","ashar":"15:12","maghrib":"18:01","isya":"19:18"},"12-22":{"imsak":"03:54","shubuh":"04:04","terbit":"05:24","dhuha":"05:51","duhur":"11:45","ashar":"15:12","maghrib":"18:01","isya":"19:18"},"12-23":{"imsak":"03:55","shubuh":"04:05","terbit":"05:25","dhuha":"05:51","duhur":"11:46","ashar":"15:13","maghrib":"18:02","isya":"19:19"},"12-24":{"imsak":"03:55","shubuh":"04:05","terbit":"05:25","dhuha":"05:52","duhur":"11:46","ashar":"15:13","maghrib":"18:02","isya":"19:19"},"12-25":{"imsak":"03:56","shubuh":"04:06","terbit":"05:26","dhuha":"05:52","duhur":"11:47","ashar":"15:14","maghrib":"18:03","isya":"19:20"},"12-26":{"imsak":"03:56","shubuh":"04:06","terbit":"05:26","dhuha":"05:53","duhur":"11:47","ashar":"15:14","maghrib":"18:03","isya":"19:20"},"12-27":{"imsak":"03:57","shubuh":"04:07","terbit":"05:27","dhuha":"05:53","duhur":"11:48","ashar":"15:15","maghrib":"18:04","isya":"19:20"},"12-28":{"imsak":"03:57","shubuh":"04:07","terbit":"05:27","dhuha":"05:54","duhur":"11:48","ashar":"15:15","maghrib":"18:04","isya":"19:21"},"12-29":{"imsak":"03:58","shubuh":"04:08","terbit":"05:28","dhuha":"05:54","duhur":"11:49","ashar":"15:15","maghrib":"18:05","isya":"19:21"},"12-30":{"imsak":"03:58","shubuh":"04:08","terbit":"05:29","dhuha":"05:55","duhur":"11:49","ashar":"15:16","maghrib":"18:05","isya":"19:22"},"12-31":{"imsak":"03:59","shubuh":"04:09","terbit":"05:29","dhuha":"05:55","duhur":"11:50","ashar":"15:16","maghrib":"18:05","isya":"19:22"}};
+
+// ====== PORT saka jawa.py (kalkulasi weton/hijriyah/next_occurrence) ======
+var PASARAN = ["Legi","Pahing","Pon","Wage","Kliwon"];
+var WEEKDAY_JAWA = ["Senin","Selasa","Rebo","Kemis","Jemuah","Setu","Ahad"];
+var BULAN = ["","Januari","Pebruari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+var HIJRI_BULAN = ["","Muharram","Shafar","Rabi'ul Awwal","Rabi'ul Akhir","Jumadil Ula","Jumadil Akhir","Rajab","Sya'ban","Ramadhan","Syawal","Dzulqa'dah","Dzulhijjah"];
+var PASARAN_ABBR = {"Legi":"Leg","Pahing":"Pah","Pon":"Pon","Wage":"Wag","Kliwon":"Kli"};
+var ANCHOR_MS = Date.UTC(1945,7,17);
+var HIJRI_EPOCH = 1948440;
+var DAY_MS = 86400000;
+
+function pasaranOf(dateMs){
+  var delta = Math.round((dateMs - ANCHOR_MS)/DAY_MS);
+  return PASARAN[((delta%5)+5)%5];
+}
+function weekdayJawaOf(dateMs){
+  var d = new Date(dateMs);
+  return WEEKDAY_JAWA[(d.getUTCDay()+6)%7];
+}
+function ymdKey(y,m,d){ return Date.UTC(y,m-1,d); }
+function keyOfLocal(dt){ return Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()); }
+function maghribLookup(dateMs){
+  var d = new Date(dateMs);
+  var mm = String(d.getUTCMonth()+1).padStart(2,"0");
+  var dd = String(d.getUTCDate()).padStart(2,"0");
+  var s = MAGHRIB_MAP[mm+"-"+dd];
+  if(!s) return null;
+  var parts = s.split(":"); return [parseInt(parts[0],10), parseInt(parts[1],10)];
+}
+function gregorianToJdn(y,m,d){
+  var a = Math.floor((14-m)/12), y2=y+4800-a, m2=m+12*a-3;
+  return d + Math.floor((153*m2+2)/5) + 365*y2 + Math.floor(y2/4) - Math.floor(y2/100) + Math.floor(y2/400) - 32045;
+}
+function islamicToJdn(year,month,day){
+  return day + Math.ceil(29.5*(month-1)) + (year-1)*354 + Math.floor((3+11*year)/30) + HIJRI_EPOCH - 1;
+}
+function gregorianToHijri(y,m,d){
+  var jdn = gregorianToJdn(y,m,d);
+  var year = Math.floor((30*(jdn-HIJRI_EPOCH)+10646)/10631);
+  var monthStart = islamicToJdn(year,1,1);
+  var month = Math.min(12, Math.ceil((jdn-(29+monthStart))/29.5)+1);
+  var day = jdn - islamicToJdn(year,month,1) + 1;
+  return [year,month,day];
+}
+function dinaJawaEfektif(now, maghribHM){
+  var mg = maghribHM || [18,0];
+  var maghribDt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), mg[0], mg[1], 0, 0);
+  var todayMs = keyOfLocal(now);
+  return now >= maghribDt ? todayMs + DAY_MS : todayMs;
+}
+
+// Bali {dt: Date lokal kedadeyan sabanjuré, ruleKey: Date-ms dinten Jawi (kanggo weton
+// acara mubeng) } utawa null yèn ora ketemu ing wewatesan.
+function nextOccurrence(ev, now, horizonDays){
+  horizonDays = horizonDays || 40;
+  var todayJawa = dinaJawaEfektif(now, maghribLookup(keyOfLocal(now)));
+
+  if (ev.date || ev.date_start){
+    var ds = ev.date_start || ev.date;
+    var de = ev.date_end || ev.date || ds;
+    var sp = ds.split("-").map(Number), ep = de.split("-").map(Number);
+    var endDt;
+    if (ev.jam){
+      var jp = ev.jam.split(":").map(Number);
+      endDt = new Date(ep[0], ep[1]-1, ep[2], jp[0], jp[1], 0, 0);
+    } else {
+      endDt = new Date(ep[0], ep[1]-1, ep[2], 23, 59, 0, 0);
+    }
+    if (endDt >= now){
+      return {dt: new Date(sp[0], sp[1]-1, sp[2], 0,0,0,0), ruleKey: null};
+    }
+    return null;
+  }
+
+  var horizon = ev.hijri_month ? 370 : horizonDays;
+  for (var i=0;i<horizon;i++){
+    var candMs = todayJawa + i*DAY_MS;
+    var cd = new Date(candMs);
+    var cy = cd.getUTCFullYear(), cm = cd.getUTCMonth()+1, cdd = cd.getUTCDate();
+    if (ev.hijri_month){
+      var h = gregorianToHijri(cy,cm,cdd);
+      if (h[1] !== ev.hijri_month || h[2] !== ev.hijri_day) continue;
+      var candDtH = new Date(cy, cm-1, cdd, 0,0,0,0);
+      if (candDtH >= now) return {dt: candDtH, ruleKey: candMs};
+      continue;
+    }
+    if (weekdayJawaOf(candMs) !== ev.weekday) continue;
+    if (ev.pasaran && pasaranOf(candMs) !== ev.pasaran) continue;
+    var civilMs = ev.malam ? candMs - DAY_MS : candMs;
+    var civ = new Date(civilMs);
+    var vy = civ.getUTCFullYear(), vm = civ.getUTCMonth()+1, vd = civ.getUTCDate();
+    var candDt;
+    if (ev.jam){
+      var jp2 = ev.jam.split(":").map(Number);
+      candDt = new Date(vy, vm-1, vd, jp2[0], jp2[1], 0, 0);
+    } else if (ev.malam){
+      var mg2 = maghribLookup(civilMs) || [18,0];
+      candDt = new Date(vy, vm-1, vd, mg2[0], mg2[1], 0, 0);
+    } else {
+      candDt = new Date(vy, vm-1, vd, 0,0,0,0);
+    }
+    if (candDt >= now) return {dt: candDt, ruleKey: candMs};
+  }
+  return null;
+}
+
+// ====== Rendering ======
+var $ = function(id){ return document.getElementById(id); };
+var esc = function(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+}); };
+
+function tglOneTime(ev){
+  var ds = ev.date_start || ev.date, de = ev.date_end || ev.date || ds;
+  var sp = ds.split("-").map(Number), ep = de.split("-").map(Number);
+  if (ds === de){
+    var k = ymdKey(sp[0],sp[1],sp[2]);
+    return weekdayJawaOf(k) + " " + pasaranOf(k) + ", " + sp[2] + " " + BULAN[sp[1]] + " " + sp[0];
+  } else if (sp[0]===ep[0] && sp[1]===ep[1]){
+    return sp[2] + "-" + ep[2] + " " + BULAN[sp[1]] + " " + sp[0];
+  } else {
+    return sp[2] + " " + BULAN[sp[1]] + " - " + ep[2] + " " + BULAN[ep[1]] + " " + ep[0];
+  }
+}
+
+function whenText(ev, dt){
+  var txt;
+  if (ev.date || ev.date_start){
+    txt = tglOneTime(ev);
+  } else {
+    var k = keyOfLocal(dt);
+    txt = weekdayJawaOf(k) + " " + pasaranOf(k) + ", " + dt.getDate() + " " + BULAN[dt.getMonth()+1] + " " + dt.getFullYear();
+  }
+  if (ev.jam){
+    txt += " · " + String(dt.getHours()).padStart(2,"0") + ":" + String(dt.getMinutes()).padStart(2,"0") + " WIB";
+  } else if (ev.jam_label){
+    txt += " · " + ev.jam_label;
+  }
+  return txt;
+}
+
+function companionText(ev){
+  if (ev.pendherek && ev.pendherek.length) return "👥 Bersama " + ev.pendherek.join(", ");
+  return null;
+}
+
+function wetonBadge(ev){
+  if (ev.hijri_month) return HIJRI_BULAN[ev.hijri_month] + " " + ev.hijri_day + " H";
+  if (ev.weekday) return ev.pasaran ? (ev.weekday + " " + ev.pasaran) : ev.weekday;
+  return null;
+}
+
+function relText(dt, now){
+  var a = keyOfLocal(now), b = keyOfLocal(dt);
+  var diff = Math.round((b-a)/DAY_MS);
+  if (diff <= 0) return "dinten menika";
+  if (diff === 1) return "mbenjang";
+  return diff + " dinten malih";
+}
+
+function computeOccurrences(jadwal, now){
+  var out = [];
+  for (var i=0;i<jadwal.length;i++){
+    var ev = jadwal[i];
+    var r = nextOccurrence(ev, now);
+    if (r) out.push({ev: ev, dt: r.dt, idx: i});
+  }
+  out.sort(function(a,b){ return a.dt - b.dt; });
+  return out;
+}
+
+function render(jadwal, now){
+  var occs = computeOccurrences(jadwal, now);
+  var hlSlot = $("highlightSlot"), agSlot = $("agendaSlot");
+  hlSlot.innerHTML = ""; agSlot.innerHTML = "";
+
+  if (!occs.length){
+    hlSlot.innerHTML = '<div class="empty">Boten wonten acara ing 40 dinten ngajeng.</div>';
+    return;
+  }
+
+  var first = occs[0];
+  var hl = document.createElement("div");
+  hl.className = "hl-card";
+  hl.style.cursor = "pointer";
+  var badge = wetonBadge(first.ev);
+  hl.innerHTML =
+    '<p class="hl-label">' + (first.ev.added_by === "sopir" ? "🚘 " : "") + esc(first.ev.label) + '</p>' +
+    (first.ev.sub ? '<p class="hl-sub">' + esc(first.ev.sub) + '</p>' : '') +
+    (companionText(first.ev) ? '<p class="hl-sub" style="color:var(--accent);font-weight:600;">' + esc(companionText(first.ev)) + '</p>' : '') +
+    '<div class="hl-when">' +
+      '<span class="hl-date">' + (badge ? '<span class="badge">'+esc(badge)+'</span>' : '') + esc(whenText(first.ev, first.dt)) + '</span>' +
+      '<span class="hl-rel">' + relText(first.dt, now) + '</span>' +
+    '</div>';
+  hl.addEventListener("click", function(){ openSheet(first.idx); });
+  hlSlot.appendChild(hl);
+
+  var rest = occs.slice(1);
+  if (!rest.length) return;
+
+  $("agendaSlot").insertAdjacentHTML("beforebegin", '<p class="section-title" id="restTitle">Sabanjuré</p>');
+  var box = document.createElement("div");
+  box.className = "agenda";
+  var lastGroup = null;
+  rest.forEach(function(o){
+    var groupKey = (o.ev.date || o.ev.date_start) ? tglOneTime(o.ev) :
+      (weekdayJawaOf(keyOfLocal(o.dt)) + " " + pasaranOf(keyOfLocal(o.dt)) + ", " + o.dt.getDate() + " " + BULAN[o.dt.getMonth()+1]);
+    if (groupKey !== lastGroup){
+      var head = document.createElement("div");
+      head.className = "day-head";
+      head.textContent = groupKey;
+      box.appendChild(head);
+      lastGroup = groupKey;
+    }
+    var badge2 = wetonBadge(o.ev);
+    var timeTxt = o.ev.jam ? (String(o.dt.getHours()).padStart(2,"0")+":"+String(o.dt.getMinutes()).padStart(2,"0")) : "";
+    var row = document.createElement("div");
+    row.className = "row";
+    row.style.cursor = "pointer";
+    row.addEventListener("click", (function(idx){ return function(){ openSheet(idx); }; })(o.idx));
+    row.innerHTML =
+      '<div class="row-top"><span class="row-label">' + (o.ev.added_by === "sopir" ? "🚘 " : "") + esc(o.ev.label) + '</span>' +
+      (timeTxt ? '<span class="row-time">'+timeTxt+'</span>' : '') + '</div>' +
+      (o.ev.sub ? '<div class="row-sub">'+esc(o.ev.sub)+'</div>' : '') +
+      (companionText(o.ev) ? '<div class="row-sub" style="color:var(--accent);font-weight:600;">'+esc(companionText(o.ev))+'</div>' : '') +
+      '<div class="row-meta">' + (badge2 ? '<span class="badge">'+esc(badge2)+'</span>' : '') +
+      (!o.ev.jam && o.ev.jam_label ? esc(o.ev.jam_label) : '') + '</div>';
+    box.appendChild(row);
+  });
+  agSlot.appendChild(box);
+}
+
+// ====== Fetch / sync ======
+var STORE_KEY = "jadwalAlMukarramCache";
+
+function setStatus(text, ok){
+  $("statusText").textContent = text;
+  $("statusDot").className = "dot" + (ok===false ? " off" : "");
+}
+function setBanner(html){ $("bannerSlot").innerHTML = html; }
+
+var CURRENT_JADWAL = FALLBACK_JADWAL;
+
+function useData(jadwal, fetchedAtLabel){
+  CURRENT_JADWAL = jadwal;
+  render(jadwal, new Date());
+  $("fetchedAt").textContent = fetchedAtLabel;
+  checkNotifications();
+}
+
+// ====== Notifikasi (mlaku nalika kaca kabikak, ora nalika ditutup babar pisan) ======
+var NOTIF_WINDOW_MIN = 30;
+var NOTIFIED_KEY = "jadwalNotified";
+
+function getNotifiedSet(){
+  try{ return new Set(JSON.parse(localStorage.getItem(NOTIFIED_KEY) || "[]")); }catch(e){ return new Set(); }
+}
+function saveNotifiedSet(s){
+  var arr = Array.from(s);
+  if (arr.length > 200) arr = arr.slice(arr.length - 200);
+  try{ localStorage.setItem(NOTIFIED_KEY, JSON.stringify(arr)); }catch(e){}
+}
+function checkNotifications(){
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  var now = new Date();
+  var occs = computeOccurrences(CURRENT_JADWAL, now);
+  var notified = getNotifiedSet();
+  var changed = false;
+  occs.forEach(function(o){
+    var mins = (o.dt - now) / 60000;
+    if (mins <= 0 || mins > NOTIF_WINDOW_MIN) return;
+    var key = o.ev.label + "|" + o.dt.getTime();
+    if (notified.has(key)) return;
+    notified.add(key); changed = true;
+    var body = "Isih " + Math.max(1, Math.round(mins)) + " menit maneh (" +
+      String(o.dt.getHours()).padStart(2,"0") + ":" + String(o.dt.getMinutes()).padStart(2,"0") + " WIB)";
+    var comp = companionText(o.ev);
+    if (comp) body += " · " + comp;
+    try{ new Notification(o.ev.label, {body: body}); }catch(e){}
+  });
+  if (changed) saveNotifiedSet(notified);
+}
+
+function load(isManual){
+  var btn = $("refreshBtn");
+  if (isManual) btn.classList.add("spin");
+
+  if (!FIREBASE_URL){
+    setBanner('<div class="banner">Kaca menika dèrèng kesambet dhateng widget (during disetting). ' +
+      'Nedahaken data conto/statis rumiyin — sesambetan langsung dereng aktif.</div>');
+    setStatus("Data statis (dèrèng kesambet)", false);
+    useData(FALLBACK_JADWAL, "data statis");
+    if (isManual) btn.classList.remove("spin");
+    return;
+  }
+
+  setStatus("Nyambet…");
+  fetch(FIREBASE_URL.replace(/\/$/,"") + "/jadwal.json?_=" + Date.now())
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(data){
+      var jadwal = (data && data.length) ? data : FALLBACK_JADWAL;
+      try{ localStorage.setItem(STORE_KEY, JSON.stringify({jadwal: jadwal, at: Date.now()})); }catch(e){}
+      setBanner("");
+      var now = new Date();
+      setStatus("Kesambet · " + String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0"));
+      useData(jadwal, now.toLocaleString("id-ID", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}));
+    })
+    .catch(function(){
+      var cached = null;
+      try{ cached = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); }catch(e){}
+      if (cached && cached.jadwal){
+        setBanner('<div class="banner">Boten saged nyambet internet. Nedahaken data pungkasan ' +
+          'ingkang kesimpen ing HP menika.</div>');
+        var d = new Date(cached.at);
+        useData(cached.jadwal, d.toLocaleString("id-ID", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) + " (offline)");
+      } else {
+        setBanner('<div class="banner">Boten saged nyambet internet lan dèrèng wonten data ' +
+          'kesimpen. Nedahaken data conto/statis.</div>');
+        useData(FALLBACK_JADWAL, "data statis (offline)");
+      }
+      setStatus("Offline", false);
+    })
+    .finally(function(){ if (isManual) btn.classList.remove("spin"); });
+}
+
+// ====== Mode padhang/peteng (☀/🌙, kasimpen ing localStorage) ======
+(function(){
+  var sysDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var saved = localStorage.getItem("jadwalTheme"); // "light" | "dark" | null(=ndherek sistem)
+  var current = saved || (sysDark ? "dark" : "light");
+  function apply(t){
+    document.documentElement.dataset.theme = t;
+    $("themeBtn").textContent = t === "dark" ? "☀️" : "🌙";
+  }
+  apply(current);
+  $("themeBtn").addEventListener("click", function(){
+    current = current === "dark" ? "light" : "dark";
+    try{ localStorage.setItem("jadwalTheme", current); }catch(e){}
+    apply(current);
+  });
+})();
+
+$("refreshBtn").addEventListener("click", function(){ load(true); });
+document.addEventListener("visibilitychange", function(){
+  if (document.visibilityState === "visible") load(false);
+});
+setInterval(function(){ if (document.visibilityState === "visible") load(false); }, POLL_MS);
+
+if (localStorage.getItem("hideInstallHint") === "1"){ $("installHint").style.display = "none"; }
+$("installX").addEventListener("click", function(){
+  $("installHint").style.display = "none";
+  try{ localStorage.setItem("hideInstallHint","1"); }catch(e){}
+});
+
+// ====== Banner "Aktifake Notifikasi" ======
+(function(){
+  var supported = "Notification" in window;
+  var dismissed = localStorage.getItem("hideNotifHint") === "1";
+  if (!supported || dismissed || Notification.permission !== "default"){
+    $("notifHint").style.display = "none";
+    return;
+  }
+  $("notifX").addEventListener("click", function(){
+    $("notifHint").style.display = "none";
+    try{ localStorage.setItem("hideNotifHint","1"); }catch(e){}
+  });
+  $("notifBtn").addEventListener("click", function(){
+    Notification.requestPermission().then(function(perm){
+      $("notifHint").style.display = "none";
+      try{ localStorage.setItem("hideNotifHint","1"); }catch(e){}
+      if (perm === "granted") checkNotifications();
+    });
+  });
+})();
+
+// ====== Formulir Tambah/Ewahi Acara (sopir/sinten kemawon, langsung dhateng Firebase) ======
+var curJenis = "selapanan";
+var editIdx = null; // null = nambah acara enggal, angka = ngewahi CURRENT_JADWAL[editIdx]
+
+function openSheet(idx){
+  editIdx = (typeof idx === "number") ? idx : null;
+  var ev = editIdx !== null ? CURRENT_JADWAL[editIdx] : null;
+
+  $("fLabel").value = ev ? ev.label : "";
+  $("fSub").value = ev ? (ev.sub || "") : "";
+  $("fWeekday").value = (ev && ev.weekday) ? ev.weekday : "Ahad";
+  $("fPasaran").value = (ev && ev.pasaran) ? ev.pasaran : "";
+  $("fMalam").checked = !!(ev && ev.malam);
+  $("fHijriBulan").value = (ev && ev.hijri_month) ? String(ev.hijri_month) : "8";
+  $("fHijriHari").value = (ev && ev.hijri_day) ? String(ev.hijri_day) : "15";
+  $("fDateStart").value = ev ? (ev.date_start || ev.date || "") : "";
+  $("fDateEnd").value = ev ? (ev.date_end || "") : "";
+  $("fJam").value = ev ? (ev.jam || "") : "";
+  $("fJamLabel").value = ev ? (ev.jam_label || "") : "";
+  var pend0 = (ev && ev.pendherek) || [];
+  $("fPendSuprih").checked = pend0.indexOf("Pak Suprih") !== -1;
+  $("fPendAna").checked = pend0.indexOf("Pak Ana") !== -1;
+  var liyane0 = pend0.filter(function(p){ return p !== "Pak Suprih" && p !== "Pak Ana"; });
+  $("fPendLiyane").checked = liyane0.length > 0;
+  $("fPendLiyaneTxt").value = liyane0.join(", ");
+  $("formErr").className = "formerr";
+
+  var jenis = "selapanan";
+  if (ev && ev.hijri_month) jenis = "hijriyah";
+  else if (ev && (ev.date || ev.date_start)) jenis = "tanggal";
+  setJenis(jenis);
+
+  $("sheetTitle").textContent = ev ? "Ewahi Acara" : "Tambah Acara";
+  $("btnDel").classList.toggle("hidden", !ev);
+  $("overlay").classList.remove("hidden");
+}
+function closeSheet(){ $("overlay").classList.add("hidden"); }
+function setJenis(j){
+  curJenis = j;
+  document.querySelectorAll("#jenisSeg button").forEach(function(b){
+    b.classList.toggle("on", b.dataset.jenis === j);
+  });
+  $("blokSelapanan").style.display = j === "selapanan" ? "" : "none";
+  $("blokHijriyah").style.display = j === "hijriyah" ? "" : "none";
+  $("blokTanggal").style.display = j === "tanggal" ? "" : "none";
+}
+document.querySelectorAll("#jenisSeg button").forEach(function(b){
+  b.addEventListener("click", function(){ setJenis(b.dataset.jenis); });
+});
+$("fabAdd").addEventListener("click", openSheet);
+$("btnCancel").addEventListener("click", closeSheet);
+$("overlay").addEventListener("click", function(e){ if (e.target.id === "overlay") closeSheet(); });
+
+function showFormErr(msg){
+  var el = $("formErr"); el.textContent = msg; el.className = "formerr show";
+}
+
+function buildEventFromForm(){
+  var label = $("fLabel").value.trim();
+  if (!label) return {err: "Jeneng acara kedah dipun-isi."};
+  var sub = $("fSub").value.trim();
+  var jam = $("fJam").value || null;
+  var jamLabel = jam ? null : ($("fJamLabel").value.trim() || null);
+  // acara enggal ditandhani "saking sopir" (🚘); acara ingkang diewahi tetep
+  // nyimpen tandha asline (mboten katut dadi "sopir" mung amarga diewahi).
+  var addedBy = editIdx !== null ? (CURRENT_JADWAL[editIdx].added_by || null) : "sopir";
+  var pendherek = [];
+  if ($("fPendSuprih").checked) pendherek.push("Pak Suprih");
+  if ($("fPendAna").checked) pendherek.push("Pak Ana");
+  if ($("fPendLiyane").checked){
+    $("fPendLiyaneTxt").value.split(",").forEach(function(nm){
+      nm = nm.trim(); if (nm) pendherek.push(nm);
+    });
+  }
+  var ev = {label: label, sub: sub, jam: jam, jam_label: jamLabel, added_by: addedBy, pendherek: pendherek};
+
+  if (curJenis === "selapanan"){
+    ev.weekday = $("fWeekday").value;
+    ev.pasaran = $("fPasaran").value || null;
+    ev.malam = $("fMalam").checked;
+  } else if (curJenis === "hijriyah"){
+    ev.hijri_month = parseInt($("fHijriBulan").value, 10);
+    ev.hijri_day = parseInt($("fHijriHari").value, 10);
+    if (!ev.hijri_day || ev.hijri_day < 1 || ev.hijri_day > 30) return {err: "Tanggal Hijriyah 1-30."};
+  } else {
+    var ds = $("fDateStart").value;
+    if (!ds) return {err: "Tanggal kedah dipun-isi."};
+    ev.date_start = ds;
+    ev.date_end = $("fDateEnd").value || ds;
+    if (ev.date_start === ev.date_end){ ev.date = ev.date_start; delete ev.date_start; delete ev.date_end; }
+  }
+  return {ev: ev};
+}
+
+function pushJadwal(updated, btn, busyLabel, idleLabel, onOk){
+  btn.disabled = true; btn.textContent = busyLabel;
+  fetch(FIREBASE_URL.replace(/\/$/,"") + "/jadwal.json", {
+    method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify(updated)
+  }).then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(){
+      try{ localStorage.setItem(STORE_KEY, JSON.stringify({jadwal: updated, at: Date.now()})); }catch(e){}
+      useData(updated, new Date().toLocaleString("id-ID", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}));
+      onOk();
+    })
+    .catch(function(){ showFormErr("Boten saged nyimpen — mriksa sambungan internet, lajeng cobi malih."); })
+    .finally(function(){ btn.disabled = false; btn.textContent = idleLabel; });
+}
+
+$("btnSave").addEventListener("click", function(){
+  var built = buildEventFromForm();
+  if (built.err){ showFormErr(built.err); return; }
+  if (!FIREBASE_URL){ showFormErr("Kaca menika dèrèng kesambet Firebase, mboten saged nyimpen owahan rumiyin."); return; }
+
+  var updated = CURRENT_JADWAL.slice();
+  if (editIdx !== null) updated[editIdx] = built.ev;
+  else updated.push(built.ev);
+  pushJadwal(updated, $("btnSave"), "Nyimpen…", "Simpen", closeSheet);
+});
+
+$("btnDel").addEventListener("click", function(){
+  if (editIdx === null) return;
+  if (!FIREBASE_URL){ showFormErr("Kaca menika dèrèng kesambet Firebase, mboten saged mbusak rumiyin."); return; }
+  if (!confirm("Busak acara \"" + CURRENT_JADWAL[editIdx].label + "\"?")) return;
+  var updated = CURRENT_JADWAL.slice();
+  updated.splice(editIdx, 1);
+  pushJadwal(updated, $("btnDel"), "Mbusak…", "Busak", closeSheet);
+});
+
+// ====== Panel Waktu Sholat ======
+var FARDHU_LABELS = [["imsak","Imsak"],["shubuh","Shubuh"],["terbit","Terbit"],["dhuha","Dhuha"],
+                      ["duhur","Dhuhur"],["ashar","Ashar"],["maghrib","Maghrib"],["isya","Isya'"]];
+
+function renderSholat(){
+  var now = new Date();
+  var mm = String(now.getMonth()+1).padStart(2,"0"), dd = String(now.getDate()).padStart(2,"0");
+  var t = SHOLAT_MAP[mm+"-"+dd];
+  var k = keyOfLocal(now);
+  $("sholatDateTxt").textContent = weekdayJawaOf(k) + ", " + now.getDate() + " " + BULAN[now.getMonth()+1] + " " + now.getFullYear();
+  $("sholatWetonTxt").textContent = weekdayJawaOf(k) + " " + pasaranOf(k);
+  if (!t){
+    $("sholatList").innerHTML = '<div class="empty">Data mboten wonten kagem dinten menika.</div>';
+    return;
+  }
+  var nowMin = now.getHours()*60 + now.getMinutes();
+  var nextFound = false;
+  var html = "";
+  FARDHU_LABELS.forEach(function(pair){
+    var tm = t[pair[0]];
+    var p = tm.split(":").map(Number);
+    var mins = p[0]*60 + p[1];
+    var isNext = !nextFound && mins > nowMin;
+    if (isNext) nextFound = true;
+    html += '<div class="sholat-item' + (isNext ? ' next' : '') + '">' +
+      '<span class="snm">' + pair[1] + '</span><span class="stime">' + tm + ' WIB</span></div>';
+  });
+  $("sholatList").innerHTML = html;
+}
+
+// ====== Panel Kalender Masehi + Hijriyah ======
+var _now0 = new Date();
+var calYear = _now0.getFullYear(), calMonth = _now0.getMonth() + 1;
+var calOffset = parseInt(localStorage.getItem("jadwalHijriOffset") || "0", 10) || 0;
+
+function daysInMonth(y, m){ return new Date(y, m, 0).getDate(); }
+function firstWeekdayMon0(y, m){ return (new Date(y, m - 1, 1).getDay() + 6) % 7; }
+function hijriOf(dateMs){
+  var shifted = new Date(dateMs + calOffset * DAY_MS);
+  return gregorianToHijri(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1, shifted.getUTCDate());
+}
+
+function renderCalendar(){
+  var ndays = daysInMonth(calYear, calMonth);
+  var firstWd = firstWeekdayMon0(calYear, calMonth);
+  $("calTitle").textContent = BULAN[calMonth] + " " + calYear;
+
+  var now = new Date();
+  var isCurMonth = (calYear === now.getFullYear() && calMonth === now.getMonth() + 1);
+  $("calToday").style.display = isCurMonth ? "none" : "block";
+
+  var h1 = hijriOf(ymdKey(calYear, calMonth, 1));
+  var h2 = hijriOf(ymdKey(calYear, calMonth, ndays));
+  $("calHijriRange").textContent = (h1[1] === h2[1])
+    ? (h1[2] + "-" + h2[2] + " " + HIJRI_BULAN[h1[1]] + " " + h1[0] + " H")
+    : (h1[2] + " " + HIJRI_BULAN[h1[1]] + " " + h1[0] + " – " + h2[2] + " " + HIJRI_BULAN[h2[1]] + " " + h2[0] + " H");
+
+  $("calOffTxt").textContent = "Koreksi rukyat: " + (calOffset ? ((calOffset > 0 ? "+" : "") + calOffset + " dinten") : "0 (hisab taqribi)");
+
+  var todayKey = ymdKey(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  var html = "";
+  ["Sen","Sel","Reb","Kem","Jem","Set","Ngh"].forEach(function(h){ html += '<div class="cal-dow">' + h + '</div>'; });
+  for (var i = 0; i < firstWd; i++) html += '<div class="cal-cell blank"></div>';
+  for (var day = 1; day <= ndays; day++){
+    var k = ymdKey(calYear, calMonth, day);
+    var h = hijriOf(k);
+    var isToday = (k === todayKey);
+    html += '<div class="cal-cell' + (isToday ? ' today' : '') + '">' +
+      '<span class="cd">' + day + '</span><span class="ch">' + h[2] + '</span>' +
+      '<span class="cp">' + PASARAN_ABBR[pasaranOf(k)] + '</span></div>';
+  }
+  $("calGrid").innerHTML = html;
+}
+
+function bindPanelToggle(headId, bodyId, chevId){
+  $(headId).addEventListener("click", function(){
+    var closed = $(bodyId).classList.toggle("closed");
+    $(chevId).textContent = closed ? "▸" : "▾";
+  });
+}
+bindPanelToggle("sholatHead", "sholatBody", "sholatChev");
+bindPanelToggle("kalHead", "kalBody", "kalChev");
+
+$("calPrev").addEventListener("click", function(e){
+  e.stopPropagation();
+  calMonth--; if (calMonth < 1){ calMonth = 12; calYear--; }
+  renderCalendar();
+});
+$("calNext").addEventListener("click", function(e){
+  e.stopPropagation();
+  calMonth++; if (calMonth > 12){ calMonth = 1; calYear++; }
+  renderCalendar();
+});
+$("calToday").addEventListener("click", function(e){
+  e.stopPropagation();
+  var n = new Date();
+  calYear = n.getFullYear(); calMonth = n.getMonth() + 1;
+  renderCalendar();
+});
+$("calOffMinus").addEventListener("click", function(e){
+  e.stopPropagation();
+  calOffset--;
+  try{ localStorage.setItem("jadwalHijriOffset", String(calOffset)); }catch(err){}
+  renderCalendar();
+});
+$("calOffPlus").addEventListener("click", function(e){
+  e.stopPropagation();
+  calOffset++;
+  try{ localStorage.setItem("jadwalHijriOffset", String(calOffset)); }catch(err){}
+  renderCalendar();
+});
+
+renderSholat();
+renderCalendar();
+setInterval(renderSholat, 60000);
+
+load(false);
+})();
+</script>
+</body>
+</html>
