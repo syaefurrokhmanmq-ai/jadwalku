@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="id">
 <head>
 <meta charset="utf-8">
@@ -462,6 +462,10 @@ var WEEKDAY_JAWA = ["Senin","Selasa","Rebo","Kemis","Jemuah","Setu","Ahad"];
 var BULAN = ["","Januari","Pebruari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 var HIJRI_BULAN = ["","Muharram","Shafar","Rabi'ul Awwal","Rabi'ul Akhir","Jumadil Ula","Jumadil Akhir","Rajab","Sya'ban","Ramadhan","Syawal","Dzulqa'dah","Dzulhijjah"];
 var PASARAN_ABBR = {"Legi":"Leg","Pahing":"Pah","Pon":"Pon","Wage":"Wag","Kliwon":"Kli"};
+var AR_DIGITS = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
+function arNum(n){
+  return String(n).split("").map(function(c){ return (c>="0" && c<="9") ? AR_DIGITS[+c] : c; }).join("");
+}
 var ANCHOR_MS = Date.UTC(1945,7,17);
 var HIJRI_EPOCH = 1948440;
 var DAY_MS = 86400000;
@@ -602,7 +606,7 @@ function companionText(ev){
 }
 
 function wetonBadge(ev){
-  if (ev.hijri_month) return HIJRI_BULAN[ev.hijri_month] + " " + ev.hijri_day + " H";
+  if (ev.hijri_month) return HIJRI_BULAN[ev.hijri_month] + " " + arNum(ev.hijri_day) + " H";
   if (ev.weekday) return ev.pasaran ? (ev.weekday + " " + ev.pasaran) : ev.weekday;
   return null;
 }
@@ -1012,8 +1016,8 @@ function renderCalendar(){
   var h1 = hijriOf(ymdKey(calYear, calMonth, 1));
   var h2 = hijriOf(ymdKey(calYear, calMonth, ndays));
   $("calHijriRange").textContent = (h1[1] === h2[1])
-    ? (h1[2] + "-" + h2[2] + " " + HIJRI_BULAN[h1[1]] + " " + h1[0] + " H")
-    : (h1[2] + " " + HIJRI_BULAN[h1[1]] + " " + h1[0] + " – " + h2[2] + " " + HIJRI_BULAN[h2[1]] + " " + h2[0] + " H");
+    ? (arNum(h1[2]) + "-" + arNum(h2[2]) + " " + HIJRI_BULAN[h1[1]] + " " + arNum(h1[0]) + " H")
+    : (arNum(h1[2]) + " " + HIJRI_BULAN[h1[1]] + " " + arNum(h1[0]) + " – " + arNum(h2[2]) + " " + HIJRI_BULAN[h2[1]] + " " + arNum(h2[0]) + " H");
 
   $("calOffTxt").textContent = "Koreksi rukyat: " + (calOffset ? ((calOffset > 0 ? "+" : "") + calOffset + " dinten") : "0 (hisab taqribi)");
 
@@ -1026,7 +1030,7 @@ function renderCalendar(){
     var h = hijriOf(k);
     var isToday = (k === todayKey);
     html += '<div class="cal-cell' + (isToday ? ' today' : '') + '">' +
-      '<span class="cd">' + day + '</span><span class="ch">' + h[2] + '</span>' +
+      '<span class="cd">' + day + '</span><span class="ch">' + arNum(h[2]) + '</span>' +
       '<span class="cp">' + PASARAN_ABBR[pasaranOf(k)] + '</span></div>';
   }
   $("calGrid").innerHTML = html;
