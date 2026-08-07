@@ -160,7 +160,9 @@
   .cal-koreksi button{background:var(--surface2); border:1px solid var(--line); color:var(--accent); width:22px; height:22px; border-radius:6px; cursor:pointer; font-weight:800;}
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:3px;}
   .cal-dow{text-align:center; font-size:10px; color:var(--faint); font-weight:700; padding-bottom:4px;}
-  .cal-cell{aspect-ratio:1; border-radius:7px; background:var(--surface2); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; gap:1px;}
+  .cal-cell{aspect-ratio:1; border-radius:7px; background:var(--surface2); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; gap:1px; position:relative;}
+  .cal-cell .ev-dot{position:absolute; top:4px; right:5px; width:5px; height:5px; border-radius:50%; background:var(--accent);}
+  .cal-cell.today .ev-dot{background:var(--hl-accent);}
   .cal-cell.today{background:var(--hl-bg); border:1px solid var(--hl-line);}
   .cal-cell .cd{font-size:12px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums;}
   .cal-cell.today .cd{color:var(--hl-accent);}
@@ -1150,6 +1152,26 @@ function hijriOf(dateMs){
   return gregorianToHijri(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1, shifted.getUTCDate());
 }
 
+// Persis logika nextOccurrence, nanging ngecek SETUNGGAL dinten tartamtu (civilKey),
+// dudu nggoleki kedadeyan sabanjure -- dienggo kanggo titik tandha ing grid kalender.
+function eventOccursOnDay(ev, civilKey){
+  if (ev.date || ev.date_start){
+    var ds = ev.date_start || ev.date, de = ev.date_end || ev.date || ds;
+    var sp = ds.split("-").map(Number), ep = de.split("-").map(Number);
+    var sKey = ymdKey(sp[0], sp[1], sp[2]), eKey = ymdKey(ep[0], ep[1], ep[2]);
+    return civilKey >= sKey && civilKey <= eKey;
+  }
+  if (ev.hijri_month){
+    var cd = new Date(civilKey);
+    var h = gregorianToHijri(cd.getUTCFullYear(), cd.getUTCMonth() + 1, cd.getUTCDate());
+    return h[1] === ev.hijri_month && h[2] === ev.hijri_day;
+  }
+  var jawaKey = ev.malam ? civilKey + DAY_MS : civilKey;
+  if (weekdayJawaOf(jawaKey) !== ev.weekday) return false;
+  if (ev.pasaran && pasaranOf(jawaKey) !== ev.pasaran) return false;
+  return true;
+}
+
 function renderCalendar(){
   var ndays = daysInMonth(calYear, calMonth);
   var firstWd = firstWeekdayMon0(calYear, calMonth);
@@ -1175,9 +1197,11 @@ function renderCalendar(){
     var k = ymdKey(calYear, calMonth, day);
     var h = hijriOf(k);
     var isToday = (k === todayKey);
+    var hasEvent = CURRENT_JADWAL.some(function(ev){ return eventOccursOnDay(ev, k); });
     html += '<div class="cal-cell' + (isToday ? ' today' : '') + '">' +
       '<span class="cd">' + day + '</span><span class="ch">' + arNum(h[2]) + '</span>' +
-      '<span class="cp">' + PASARAN_ABBR[pasaranOf(k)] + '</span></div>';
+      '<span class="cp">' + PASARAN_ABBR[pasaranOf(k)] + '</span>' +
+      (hasEvent ? '<span class="ev-dot"></span>' : '') + '</div>';
   }
   $("calGrid").innerHTML = html;
 }
