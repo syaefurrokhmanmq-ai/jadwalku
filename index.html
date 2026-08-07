@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Jadwal Al Mukarram</title>
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2b2d84">
 <style>
   @font-face { font-family: initial; src: local(""); } /* no-op, keep system stack only */
   :root{
@@ -216,9 +221,10 @@
   .btn-del{background:var(--danger-bg); color:var(--danger);}
   .btn-del.hidden{display:none;}
   .row:active, .hl-card:active{opacity:.8;}
-</style>
 </head>
 <body>
+
+
 <div class="wrap">
   <header>
     <div class="htop">
@@ -237,9 +243,9 @@
     <div id="bannerSlot"></div>
     <div class="install" id="notifHint">
       <button class="x" id="notifX" aria-label="tutup">✕</button>
-      🔔 Kepingin dipun-elingaken ±30 menit sadurunge acara? <button type="button" id="notifBtn"
+      🔔 Kepingin dipun-elingaken ±10-30 menit sadurunge acara? <button type="button" id="notifBtn"
       style="background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer;">Aktifake Notifikasi</button>
-      <div style="margin-top:4px;">Namung mlaku nalika kaca menika kabikak (tab saged ing latar mburi, nanging browser mboten pareng ditutup babar pisan).</div>
+      <div style="margin-top:4px;">Sasampunipun aktif, kabar saged mlebet sanadyan kaca/aplikasi menika mboten dibikak (koyo notifikasi WhatsApp).</div>
     </div>
     <div class="install" id="installHint">
       <button class="x" id="installX" aria-label="tutup">✕</button>
@@ -408,6 +414,8 @@
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js"></script>
 <script>
 (function(){
 "use strict";
@@ -419,6 +427,49 @@
 // nedahaken data statis (fallback) ing ngandhap, mboten ke-mutahiraken otomatis.
 var FIREBASE_URL = "https://jadwalku-270ce-default-rtdb.asia-southeast1.firebasedatabase.app";
 var POLL_MS = 60000;
+
+// Notifikasi push (FCM) -- FCM_CONFIG.apiKey/appId lsp punika kunci PUBLIK kagem
+// klien web (dudu rahasia, pancen kudu katon ing kode browser). Kunci rahasia
+// (service-account JSON) mboten tau mlebu kaca menika -- namung dienggo dening
+// script pengirim ing GitHub Actions.
+var FCM_CONFIG = {
+  apiKey: "AIzaSyCys1Wx2c_O66sdbMrfLmqPnXyxRcli7EI",
+  authDomain: "jadwalku-270ce.firebaseapp.com",
+  databaseURL: FIREBASE_URL,
+  projectId: "jadwalku-270ce",
+  storageBucket: "jadwalku-270ce.firebasestorage.app",
+  messagingSenderId: "582319035259",
+  appId: "1:582319035259:web:a5af8c4b51f53c659e63de"
+};
+var FCM_VAPID_KEY = "BCI-sjSwDgQsPbDaBTlgCGoLE-JoPFwLUzqLAF20UXdP169AjjJotceRhgcySNJRCG8H0iMJx8NSX57awfELnaU";
+
+// Ndaftaraken token FCM kaca menika supados saged nampi notifikasi push sanadyan
+// kaca/aplikasi ditutup babar pisan (koyo WhatsApp). Best-effort: yèn firebase-sdk
+// utawa service worker mboten kesedhiya (mis. dibikak ing iframe Artifact), fungsi
+// menika mandheg alon-alon tanpa ngganggu fitur liyane ing kaca.
+function registerPushToken(){
+  if (typeof firebase === "undefined" || !("serviceWorker" in navigator) || !FIREBASE_URL) return;
+  try{
+    if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(FCM_CONFIG);
+    navigator.serviceWorker.register("firebase-messaging-sw.js").then(function(reg){
+      var messaging = firebase.messaging();
+      messaging.getToken({vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg})
+        .then(function(token){
+          if (!token) return;
+          fetch(FIREBASE_URL.replace(/\/$/,"") + "/tokens/" + encodeURIComponent(token) + ".json", {
+            method: "PUT",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ua: navigator.userAgent, ts: Date.now()})
+          }).catch(function(){});
+        })
+        .catch(function(err){ console.warn("FCM token gagal kadamel:", err); });
+      messaging.onMessage(function(payload){
+        var n = payload.notification || {};
+        try{ new Notification(n.title || "Jadwal Al Mukarram", {body: n.body || ""}); }catch(e){}
+      });
+    }).catch(function(err){ console.warn("Service worker gagal kedaftar:", err); });
+  }catch(e){ console.warn("registerPushToken gagal:", e); }
+}
 
 // ====== FALLBACK (dipun-tampilaken yèn dèrèng kesambet Firebase utawa offline) ======
 var FALLBACK_JADWAL = [
@@ -534,15 +585,16 @@ function nextOccurrence(ev, now, horizonDays){
     var ds = ev.date_start || ev.date;
     var de = ev.date_end || ev.date || ds;
     var sp = ds.split("-").map(Number), ep = de.split("-").map(Number);
-    var endDt;
+    var endDt, startH = 0, startM = 0;
     if (ev.jam){
       var jp = ev.jam.split(":").map(Number);
+      startH = jp[0]; startM = jp[1];
       endDt = new Date(ep[0], ep[1]-1, ep[2], jp[0], jp[1], 0, 0);
     } else {
       endDt = new Date(ep[0], ep[1]-1, ep[2], 23, 59, 0, 0);
     }
     if (endDt >= now){
-      return {dt: new Date(sp[0], sp[1]-1, sp[2], 0,0,0,0), ruleKey: null};
+      return {dt: new Date(sp[0], sp[1]-1, sp[2], startH, startM, 0, 0), ruleKey: null};
     }
     return null;
   }
@@ -693,6 +745,8 @@ function render(jadwal, now){
   var occs = computeOccurrences(jadwal, now);
   var hlSlot = $("highlightSlot"), agSlot = $("agendaSlot");
   hlSlot.innerHTML = ""; agSlot.innerHTML = "";
+  var oldRestTitle = $("restTitle");
+  if (oldRestTitle) oldRestTitle.remove();
 
   if (!occs.length){
     hlSlot.innerHTML = '<div class="empty">Boten wonten acara ing 40 dinten ngajeng.</div>';
@@ -896,10 +950,14 @@ $("installX").addEventListener("click", function(){
     Notification.requestPermission().then(function(perm){
       $("notifHint").style.display = "none";
       try{ localStorage.setItem("hideNotifHint","1"); }catch(e){}
-      if (perm === "granted") checkNotifications();
+      if (perm === "granted"){ checkNotifications(); registerPushToken(); }
     });
   });
 })();
+
+// Yèn ijin notifikasi wis "granted" saking kunjungan sadurunge, langsung
+// didaftaraken maneh tokenipun (mis. sasampunipun ganti HP/browser reinstall).
+if ("Notification" in window && Notification.permission === "granted") registerPushToken();
 
 // ====== Formulir Tambah/Ewahi Acara (sopir/sinten kemawon, langsung dhateng Firebase) ======
 var curJenis = "selapanan";
@@ -1168,5 +1226,6 @@ setInterval(renderSholat, 60000);
 load(false);
 })();
 </script>
+
 </body>
 </html>
