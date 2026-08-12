@@ -103,8 +103,14 @@ def next_occurrence(event, now, maghrib_lookup, horizon_days=40):
             _hy, hm_, hd = gregorian_to_hijri(cand)
             if hm_ != event["hijri_month"] or hd != event["hijri_day"]:
                 continue
-            cand_dt = datetime.datetime.combine(cand, datetime.time(0, 0))
-            if cand_dt >= now:
+            if event.get("jam"):
+                hh, mm = event["jam"].split(":")
+                cand_dt = datetime.datetime.combine(cand, datetime.time(int(hh), int(mm)))
+                check_dt = cand_dt
+            else:
+                cand_dt = datetime.datetime.combine(cand, datetime.time(0, 0))
+                check_dt = datetime.datetime.combine(cand, datetime.time(23, 59, 59))
+            if check_dt >= now:
                 return cand_dt, cand
             continue
         if weekday_jawa_of(cand) != event["weekday"]:
@@ -115,13 +121,16 @@ def next_occurrence(event, now, maghrib_lookup, horizon_days=40):
         if event.get("jam"):
             hh, mm = event["jam"].split(":")
             cand_dt = datetime.datetime.combine(civil_date, datetime.time(int(hh), int(mm)))
+            check_dt = cand_dt
         else:
             if event.get("malam"):
                 mg = maghrib_lookup(civil_date) or (18, 0)
                 cand_dt = datetime.datetime.combine(civil_date, datetime.time(mg[0], mg[1]))
+                check_dt = cand_dt
             else:
                 cand_dt = datetime.datetime.combine(civil_date, datetime.time(0, 0))
-        if cand_dt >= now:
+                check_dt = datetime.datetime.combine(civil_date, datetime.time(23, 59, 59))
+        if check_dt >= now:
             return cand_dt, cand
     return None, None
 

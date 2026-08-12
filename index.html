@@ -621,9 +621,16 @@ function nextOccurrence(ev, now, horizonDays){
     if (ev.hijri_month){
       var h = gregorianToHijri(cy,cm,cdd);
       if (h[1] !== ev.hijri_month || h[2] !== ev.hijri_day) continue;
-      var candDtH = new Date(cy, cm-1, cdd, 0,0,0,0);
-      var endOfDayH = new Date(cy, cm-1, cdd, 23,59,59,999);
-      if (endOfDayH >= now) return {dt: candDtH, ruleKey: candMs};
+      var hH = 0, hM = 0;
+      if (ev.jam){
+        var jpH = ev.jam.split(":").map(Number);
+        hH = jpH[0]; hM = jpH[1];
+      }
+      var candDtH = new Date(cy, cm-1, cdd, hH, hM, 0, 0);
+      // Tanpa jam, acara dianggep mubeng sedinten muput (katon nganti 23:59,
+      // urutan tetep 00:00); nganggo jam, mesthi kudu durung liwat wektu-né.
+      var checkDtH = ev.jam ? candDtH : new Date(cy, cm-1, cdd, 23,59,59,999);
+      if (checkDtH >= now) return {dt: candDtH, ruleKey: candMs};
       continue;
     }
     if (weekdayJawaOf(candMs) !== ev.weekday) continue;
@@ -742,13 +749,30 @@ function wetonBadge(ev){
   if (ev.weekday) return ev.pasaran ? (ev.weekday + " " + ev.pasaran) : ev.weekday;
   return null;
 }
-// Tanggal Hijriyah kagem "rincian jadwal" -- kaetang saking dinten kedadeyan
-// (dt) supados kabeh jinis acara (selapanan/tanggal tartamtu) katon tanggal
-// Hijriyah-ipun, dudu mung acara jinis "Wulan Hijriyah" kemawon.
-function hijriBadge(ev, dt){
-  if (ev.hijri_month) return HIJRI_BULAN_AR[ev.hijri_month] + " " + arNum(ev.hijri_day) + "هـ";
-  var h = gregorianToHijri(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
-  return HIJRI_BULAN_AR[h[1]] + " " + arNum(h[2]) + "هـ";
+// Tanggal Hijriyah kagem "rincian jadwal". Kagem acara "Selapanan"/"Wulan
+// Hijriyah", "dt" wis mesthi ngetung dinten Jawi sing wis mempeng liwat
+// dinaJawaEfektif() ing nextOccurrence (wis mèngko/gèsèr nalika Maghrib),
+// dadi langsung dikonversi. Kagem acara "Tanggal Tartamtu" (masehi murni,
+// dt-né ora tau gèsèr), pergantosan dinten Hijriyah nalika Maghrib during
+// kudu dietung kene dhewe: menawi dinten kadadeyanipun PERSIS dinten iki lan
+// sakniki wis liwat Maghrib, tanggal Hijriyah-é wis maju sedinten sanajan
+// tanggal Masehi-né during gantos (during tengah dalu / 00.00 WIB).
+function hijriBadge(ev, dt, now){
+  var hd = dt;
+  if (ev.date || ev.date_start){
+    if (keyOfLocal(dt) === keyOfLocal(now)){
+      var mg = maghribLookup(keyOfLocal(dt)) || [18, 0];
+      var maghribDt = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), mg[0], mg[1], 0, 0);
+      if (now >= maghribDt) hd = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + 1);
+    }
+  }
+  var h = gregorianToHijri(hd.getFullYear(), hd.getMonth() + 1, hd.getDate());
+  return arNum(h[2]) + " " + HIJRI_BULAN_AR[h[1]] + " " + arNum(h[0]) + " ه";
+}
+// Taun Masehi kagem badge jejeré hijriBadge -- TETEP miturut tanggal
+// Masehi/00.00 WIB, ora melu gèsèr Maghrib kaya hijriBadge ing ndhuwur.
+function masehiBadge(dt){
+  return dt.getFullYear() + " M";
 }
 
 function relText(dt, now){
@@ -787,7 +811,8 @@ function render(jadwal, now){
   hl.className = "hl-card";
   hl.style.cursor = "pointer";
   var badge = wetonBadge(first.ev);
-  var hbadge = hijriBadge(first.ev, first.dt);
+  var hbadge = hijriBadge(first.ev, first.dt, now);
+  var mbadge = masehiBadge(first.dt);
   hl.innerHTML =
     '<p class="hl-label">' + (first.ev.added_by === "sopir" ? "🚘 " : "") + esc(first.ev.label) + '</p>' +
     (first.ev.sub ? '<p class="hl-sub">' + esc(first.ev.sub) + '</p>' : '') +
@@ -795,7 +820,8 @@ function render(jadwal, now){
     (pemilikText(first.ev) ? '<p class="hl-sub" style="color:var(--hl-accent);font-weight:600;">' + esc(pemilikText(first.ev)) + '</p>' : '') +
     '<div class="hl-when">' +
       '<span class="hl-date">' + (badge ? '<span class="badge">'+esc(badge)+'</span>' : '') +
-        (hbadge ? '<span class="badge badge-hijri">'+esc(hbadge)+'</span>' : '') +
+        (hbadge ? '<span class="badge badge-hijri" dir="rtl">'+esc(hbadge)+'</span>' : '') +
+        '<span class="badge">'+esc(mbadge)+'</span>' +
         esc(whenText(first.ev, first.dt)) + '</span>' +
       '<span class="hl-rel">' + relText(first.dt, now) + '</span>' +
     '</div>';
@@ -823,7 +849,8 @@ function render(jadwal, now){
       lastGroup = groupKey;
     }
     var badge2 = wetonBadge(o.ev);
-    var hbadge2 = hijriBadge(o.ev, o.dt);
+    var hbadge2 = hijriBadge(o.ev, o.dt, now);
+    var mbadge2 = masehiBadge(o.dt);
     var timeTxt = o.ev.jam ? (String(o.dt.getHours()).padStart(2,"0")+":"+String(o.dt.getMinutes()).padStart(2,"0")) : "";
     var row = document.createElement("div");
     row.className = "row";
@@ -839,7 +866,8 @@ function render(jadwal, now){
       (o.ev.pendherek && o.ev.pendherek.length ? '<div class="row-sub" style="color:var(--accent);font-weight:600;">'+companionHtml(o.ev, o.idx)+'</div>' : '') +
       (pemilikText(o.ev) ? '<div class="row-sub" style="color:var(--hl-accent);font-weight:600;">'+esc(pemilikText(o.ev))+'</div>' : '') +
       '<div class="row-meta">' + (badge2 ? '<span class="badge">'+esc(badge2)+'</span>' : '') +
-      (hbadge2 ? '<span class="badge badge-hijri">'+esc(hbadge2)+'</span>' : '') +
+      (hbadge2 ? '<span class="badge badge-hijri" dir="rtl">'+esc(hbadge2)+'</span>' : '') +
+      '<span class="badge">'+esc(mbadge2)+'</span>' +
       (!o.ev.jam && o.ev.jam_label ? esc(o.ev.jam_label) : '') + '</div>';
     box.appendChild(row);
   });
