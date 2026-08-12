@@ -137,8 +137,8 @@
   }
   .badge-hijri{
     font-family:'KFGQPC Uthman Taha Naskh','Traditional Arabic',serif;
-    font-size:12.5px; font-weight:400; color:var(--hl-accent); background:none;
-    padding:1.5px 2px;
+    font-size:14px; font-weight:400; color:var(--hl-accent); background:none;
+    padding:1.5px 2px; direction:rtl; unicode-bidi:isolate;
   }
   .pend-chip{cursor:pointer; border-radius:4px; padding:1px 3px;}
   .pend-chip:active{background:var(--accent-soft);}
@@ -539,6 +539,7 @@ var PASARAN = ["Legi","Pahing","Pon","Wage","Kliwon"];
 var WEEKDAY_JAWA = ["Senin","Selasa","Rebo","Kemis","Jemuah","Setu","Ahad"];
 var BULAN = ["","Januari","Pebruari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 var HIJRI_BULAN = ["","Muharram","Shafar","Rabi'ul Awwal","Rabi'ul Akhir","Jumadil Ula","Jumadil Akhir","Rajab","Sya'ban","Ramadhan","Syawal","Dzulqa'dah","Dzulhijjah"];
+var HIJRI_BULAN_AR = ["","مُحَرَّم","صَفَر","رَبِيع الأوّل","رَبِيع الآخِر","جُمَادَى الأولى","جُمَادَى الآخِرة","رَجَب","شَعْبَان","رَمَضَان","شَوَّال","ذُو القَعْدَة","ذُو الحِجَّة"];
 var PASARAN_ABBR = {"Legi":"Leg","Pahing":"Pah","Pon":"Pon","Wage":"Wag","Kliwon":"Kli"};
 var AR_DIGITS = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
 function arNum(n){
@@ -621,7 +622,8 @@ function nextOccurrence(ev, now, horizonDays){
       var h = gregorianToHijri(cy,cm,cdd);
       if (h[1] !== ev.hijri_month || h[2] !== ev.hijri_day) continue;
       var candDtH = new Date(cy, cm-1, cdd, 0,0,0,0);
-      if (candDtH >= now) return {dt: candDtH, ruleKey: candMs};
+      var endOfDayH = new Date(cy, cm-1, cdd, 23,59,59,999);
+      if (endOfDayH >= now) return {dt: candDtH, ruleKey: candMs};
       continue;
     }
     if (weekdayJawaOf(candMs) !== ev.weekday) continue;
@@ -629,17 +631,24 @@ function nextOccurrence(ev, now, horizonDays){
     var civilMs = ev.malam ? candMs - DAY_MS : candMs;
     var civ = new Date(civilMs);
     var vy = civ.getUTCFullYear(), vm = civ.getUTCMonth()+1, vd = civ.getUTCDate();
-    var candDt;
+    var candDt, checkDt;
     if (ev.jam){
       var jp2 = ev.jam.split(":").map(Number);
       candDt = new Date(vy, vm-1, vd, jp2[0], jp2[1], 0, 0);
+      checkDt = candDt;
     } else if (ev.malam){
       var mg2 = maghribLookup(civilMs) || [18,0];
       candDt = new Date(vy, vm-1, vd, mg2[0], mg2[1], 0, 0);
+      checkDt = candDt;
     } else {
+      // Acara tanpa jam (dudu "malam") dianggep mubeng sedinten muput --
+      // tetep katon nganti pungkasaning dinten (23:59), nanging urutanipun
+      // (candDt) dipun-selehaken ing wiwitan dinten (00:00) supados pojok
+      // nduwur dhewe ing dinten kasebut, sadurunge acara sing wonten jam-e.
       candDt = new Date(vy, vm-1, vd, 0,0,0,0);
+      checkDt = new Date(vy, vm-1, vd, 23,59,59,999);
     }
-    if (candDt >= now) return {dt: candDt, ruleKey: candMs};
+    if (checkDt >= now) return {dt: candDt, ruleKey: candMs};
   }
   return null;
 }
@@ -737,9 +746,9 @@ function wetonBadge(ev){
 // (dt) supados kabeh jinis acara (selapanan/tanggal tartamtu) katon tanggal
 // Hijriyah-ipun, dudu mung acara jinis "Wulan Hijriyah" kemawon.
 function hijriBadge(ev, dt){
-  if (ev.hijri_month) return HIJRI_BULAN[ev.hijri_month] + " " + arNum(ev.hijri_day) + " H";
+  if (ev.hijri_month) return HIJRI_BULAN_AR[ev.hijri_month] + " " + arNum(ev.hijri_day) + "هـ";
   var h = gregorianToHijri(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
-  return HIJRI_BULAN[h[1]] + " " + arNum(h[2]) + " H";
+  return HIJRI_BULAN_AR[h[1]] + " " + arNum(h[2]) + "هـ";
 }
 
 function relText(dt, now){
@@ -809,7 +818,7 @@ function render(jadwal, now){
     if (groupKey !== lastGroup){
       var head = document.createElement("div");
       head.className = "day-head";
-      head.textContent = groupKey;
+      head.textContent = groupKey + " · " + relText(o.dt, now);
       box.appendChild(head);
       lastGroup = groupKey;
     }
