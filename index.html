@@ -769,10 +769,11 @@ function hijriBadge(ev, dt, now){
   var h = gregorianToHijri(hd.getFullYear(), hd.getMonth() + 1, hd.getDate());
   return arNum(h[2]) + " " + HIJRI_BULAN_AR[h[1]] + " " + arNum(h[0]) + " ه";
 }
-// Taun Masehi kagem badge jejeré hijriBadge -- TETEP miturut tanggal
-// Masehi/00.00 WIB, ora melu gèsèr Maghrib kaya hijriBadge ing ndhuwur.
+// Tanggal Masehi jejeré hijriBadge (format "15 Agustus 2026" tanggal-wulan-
+// taun, cocog kalihan format hijriBadge) -- TETEP miturut tanggal Masehi/
+// 00.00 WIB, ora melu gèsèr Maghrib kaya hijriBadge ing ndhuwur.
 function masehiBadge(dt){
-  return dt.getFullYear() + " M";
+  return dt.getDate() + " " + BULAN[dt.getMonth() + 1] + " " + dt.getFullYear();
 }
 
 function relText(dt, now){
