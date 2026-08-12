@@ -124,6 +124,7 @@
     font-size:11.5px; font-weight:700; color:var(--accent); background:var(--accent-soft);
     padding:7px 12px;
   }
+  .day-head-rel{color:var(--hl-accent);}
   .row{padding:10px 12px; border-top:1px solid var(--line);}
   .row:first-child, .day-head + .row{border-top:none;}
   .row-top{display:flex; justify-content:space-between; gap:10px; align-items:baseline;}
@@ -841,11 +842,11 @@ function render(jadwal, now){
   var lastGroup = null;
   rest.forEach(function(o){
     var groupKey = (o.ev.date || o.ev.date_start) ? tglOneTime(o.ev) :
-      (weekdayJawaOf(keyOfLocal(o.dt)) + " " + pasaranOf(keyOfLocal(o.dt)) + ", " + o.dt.getDate() + " " + BULAN[o.dt.getMonth()+1]);
+      (weekdayJawaOf(keyOfLocal(o.dt)) + " " + pasaranOf(keyOfLocal(o.dt)) + ", " + o.dt.getDate() + " " + BULAN[o.dt.getMonth()+1] + " " + o.dt.getFullYear());
     if (groupKey !== lastGroup){
       var head = document.createElement("div");
       head.className = "day-head";
-      head.textContent = groupKey + " · " + relText(o.dt, now);
+      head.innerHTML = esc(groupKey) + ' · <span class="day-head-rel">' + esc(relText(o.dt, now)) + '</span>';
       box.appendChild(head);
       lastGroup = groupKey;
     }
