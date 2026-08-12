@@ -11,6 +11,11 @@
 <meta name="theme-color" content="#2b2d84">
 <style>
   @font-face { font-family: initial; src: local(""); } /* no-op, keep system stack only */
+  @font-face {
+    font-family: 'KFGQPC Uthman Taha Naskh';
+    src: url(uthman-taha-naskh.woff2) format('woff2');
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
   :root{
     --bg:#f4f2ec; --surface:#ffffff; --surface2:#faf8f2; --line:#e2ddd0;
     --ink:#20222b; --muted:#5d6169; --faint:#9a9da6;
@@ -129,6 +134,11 @@
   .badge{
     display:inline-block; font-size:10px; font-weight:700; color:var(--accent);
     background:var(--accent-soft); border-radius:5px; padding:1.5px 6px; margin-right:6px;
+  }
+  .badge-hijri{
+    font-family:'KFGQPC Uthman Taha Naskh','Traditional Arabic',serif;
+    font-size:12.5px; font-weight:400; color:var(--hl-accent); background:none;
+    padding:1.5px 2px;
   }
   .pend-chip{cursor:pointer; border-radius:4px; padding:1px 3px;}
   .pend-chip:active{background:var(--accent-soft);}
@@ -373,14 +383,14 @@
             <option value="1">Muharram</option><option value="2">Shafar</option>
             <option value="3">Rabi'ul Awwal</option><option value="4">Rabi'ul Akhir</option>
             <option value="5">Jumadil Ula</option><option value="6">Jumadil Akhir</option>
-            <option value="7">Rajab</option><option value="8" selected>Sya'ban</option>
+            <option value="7">Rajab</option><option value="8">Sya'ban</option>
             <option value="9">Ramadhan</option><option value="10">Syawal</option>
             <option value="11">Dzulqa'dah</option><option value="12">Dzulhijjah</option>
           </select>
         </div>
         <div class="field">
           <label>Tanggal (1-30)</label>
-          <input type="number" id="fHijriHari" min="1" max="30" value="15">
+          <input type="number" id="fHijriHari" min="1" max="30">
         </div>
       </div>
     </div>
@@ -720,9 +730,16 @@ document.addEventListener("click", function(e){
 });
 
 function wetonBadge(ev){
-  if (ev.hijri_month) return HIJRI_BULAN[ev.hijri_month] + " " + arNum(ev.hijri_day) + " H";
   if (ev.weekday) return ev.pasaran ? (ev.weekday + " " + ev.pasaran) : ev.weekday;
   return null;
+}
+// Tanggal Hijriyah kagem "rincian jadwal" -- kaetang saking dinten kedadeyan
+// (dt) supados kabeh jinis acara (selapanan/tanggal tartamtu) katon tanggal
+// Hijriyah-ipun, dudu mung acara jinis "Wulan Hijriyah" kemawon.
+function hijriBadge(ev, dt){
+  if (ev.hijri_month) return HIJRI_BULAN[ev.hijri_month] + " " + arNum(ev.hijri_day) + " H";
+  var h = gregorianToHijri(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
+  return HIJRI_BULAN[h[1]] + " " + arNum(h[2]) + " H";
 }
 
 function relText(dt, now){
@@ -761,13 +778,16 @@ function render(jadwal, now){
   hl.className = "hl-card";
   hl.style.cursor = "pointer";
   var badge = wetonBadge(first.ev);
+  var hbadge = hijriBadge(first.ev, first.dt);
   hl.innerHTML =
     '<p class="hl-label">' + (first.ev.added_by === "sopir" ? "🚘 " : "") + esc(first.ev.label) + '</p>' +
     (first.ev.sub ? '<p class="hl-sub">' + esc(first.ev.sub) + '</p>' : '') +
     (first.ev.pendherek && first.ev.pendherek.length ? '<p class="hl-sub" style="color:var(--accent);font-weight:600;">' + companionHtml(first.ev, first.idx) + '</p>' : '') +
     (pemilikText(first.ev) ? '<p class="hl-sub" style="color:var(--hl-accent);font-weight:600;">' + esc(pemilikText(first.ev)) + '</p>' : '') +
     '<div class="hl-when">' +
-      '<span class="hl-date">' + (badge ? '<span class="badge">'+esc(badge)+'</span>' : '') + esc(whenText(first.ev, first.dt)) + '</span>' +
+      '<span class="hl-date">' + (badge ? '<span class="badge">'+esc(badge)+'</span>' : '') +
+        (hbadge ? '<span class="badge badge-hijri">'+esc(hbadge)+'</span>' : '') +
+        esc(whenText(first.ev, first.dt)) + '</span>' +
       '<span class="hl-rel">' + relText(first.dt, now) + '</span>' +
     '</div>';
   hl.addEventListener("click", function(e){
@@ -794,6 +814,7 @@ function render(jadwal, now){
       lastGroup = groupKey;
     }
     var badge2 = wetonBadge(o.ev);
+    var hbadge2 = hijriBadge(o.ev, o.dt);
     var timeTxt = o.ev.jam ? (String(o.dt.getHours()).padStart(2,"0")+":"+String(o.dt.getMinutes()).padStart(2,"0")) : "";
     var row = document.createElement("div");
     row.className = "row";
@@ -809,6 +830,7 @@ function render(jadwal, now){
       (o.ev.pendherek && o.ev.pendherek.length ? '<div class="row-sub" style="color:var(--accent);font-weight:600;">'+companionHtml(o.ev, o.idx)+'</div>' : '') +
       (pemilikText(o.ev) ? '<div class="row-sub" style="color:var(--hl-accent);font-weight:600;">'+esc(pemilikText(o.ev))+'</div>' : '') +
       '<div class="row-meta">' + (badge2 ? '<span class="badge">'+esc(badge2)+'</span>' : '') +
+      (hbadge2 ? '<span class="badge badge-hijri">'+esc(hbadge2)+'</span>' : '') +
       (!o.ev.jam && o.ev.jam_label ? esc(o.ev.jam_label) : '') + '</div>';
     box.appendChild(row);
   });
@@ -966,6 +988,22 @@ if ("Notification" in window && Notification.permission === "granted") registerP
 var curJenis = "selapanan";
 var editIdx = null; // null = nambah acara enggal, angka = ngewahi CURRENT_JADWAL[editIdx]
 
+// Nyinkronaken tab "Wulan Hijriyah" (samar/tersembunyi) supados nderek tanggal
+// Masehi ingkang saweg dipun-isi ing tab "Tanggal Tartamtu" -- supados menawi
+// dumadakan tab ingkang aktif nalika pencet Simpen tetep "Wulan Hijriyah"
+// (mis. sasampunipun tumbling/klera-kleru pencet tab), datanipun tetep cocog
+// kalihan tanggal Masehi ingkang dipun-input, mboten mrucut dhateng default
+// ingkang mboten trep (tau kedadeyan: mesti kesimpen 15 Sya'ban).
+function syncHijriFromMasehi(){
+  var v = $("fDateStart").value;
+  var d = v ? new Date(v + "T00:00:00") : new Date();
+  if (isNaN(d.getTime())) return;
+  var h = gregorianToHijri(d.getFullYear(), d.getMonth() + 1, d.getDate());
+  $("fHijriBulan").value = String(h[1]);
+  $("fHijriHari").value = String(h[2]);
+}
+$("fDateStart").addEventListener("input", syncHijriFromMasehi);
+
 function openSheet(idx){
   editIdx = (typeof idx === "number") ? idx : null;
   var ev = editIdx !== null ? CURRENT_JADWAL[editIdx] : null;
@@ -975,10 +1013,14 @@ function openSheet(idx){
   $("fWeekday").value = (ev && ev.weekday) ? ev.weekday : "Ahad";
   $("fPasaran").value = (ev && ev.pasaran) ? ev.pasaran : "";
   $("fMalam").checked = !!(ev && ev.malam);
-  $("fHijriBulan").value = (ev && ev.hijri_month) ? String(ev.hijri_month) : "8";
-  $("fHijriHari").value = (ev && ev.hijri_day) ? String(ev.hijri_day) : "15";
   $("fDateStart").value = ev ? (ev.date_start || ev.date || "") : "";
   $("fDateEnd").value = ev ? (ev.date_end || "") : "";
+  if (ev && ev.hijri_month){
+    $("fHijriBulan").value = String(ev.hijri_month);
+    $("fHijriHari").value = String(ev.hijri_day);
+  } else {
+    syncHijriFromMasehi();
+  }
   $("fJam").value = ev ? (ev.jam || "") : "";
   $("fJamLabel").value = ev ? (ev.jam_label || "") : "";
   var pend0 = (ev && ev.pendherek) || [];
