@@ -126,9 +126,11 @@
   }
   .day-head-rel{color:var(--hl-accent);}
   .row{padding:10px 12px; border-top:1px solid var(--line);}
+  .row.band-b{background:color-mix(in srgb, var(--accent-soft) 40%, var(--surface));}
   .row:first-child, .day-head + .row{border-top:none;}
   .row-top{display:flex; justify-content:space-between; gap:10px; align-items:baseline;}
   .row-label{font-size:13.5px; font-weight:600; line-height:1.35;}
+  .sopir-dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent); margin-right:6px; vertical-align:middle;}
   .row-time{font-size:12px; color:var(--accent); font-weight:700; white-space:nowrap; flex:none;}
   .row-sub{font-size:11.5px; color:var(--muted); margin-top:2px;}
   .row-meta{font-size:11px; color:var(--faint); margin-top:4px;}
@@ -172,7 +174,7 @@
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:3px;}
   .cal-dow{text-align:center; font-size:10px; color:var(--faint); font-weight:700; padding-bottom:4px;}
   .cal-cell{aspect-ratio:1; border-radius:7px; background:var(--surface2); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; gap:1px; position:relative;}
-  .cal-cell .ev-dots{position:absolute; top:4px; right:4px; display:flex; gap:2px;}
+  .cal-cell .ev-dots{display:flex; gap:2px; margin-top:2px;}
   .cal-cell .ev-dots .dot{width:4px; height:4px; border-radius:50%; background:var(--accent);}
   .cal-cell.today .ev-dots .dot{background:var(--hl-accent);}
   .cal-cell.today{background:var(--hl-bg); border:1px solid var(--hl-line);}
@@ -817,7 +819,7 @@ function render(jadwal, now){
   var hbadge = hijriBadge(first.ev, first.dt, now);
   var mbadge = masehiBadge(first.dt);
   hl.innerHTML =
-    '<p class="hl-label">' + (first.ev.added_by === "sopir" ? "🚘 " : "") + esc(first.ev.label) + '</p>' +
+    '<p class="hl-label">' + (first.ev.added_by === "sopir" ? '<span class="sopir-dot"></span>' : "") + esc(first.ev.label) + '</p>' +
     (first.ev.sub ? '<p class="hl-sub">' + esc(first.ev.sub) + '</p>' : '') +
     (first.ev.pendherek && first.ev.pendherek.length ? '<p class="hl-sub" style="color:var(--accent);font-weight:600;">' + companionHtml(first.ev, first.idx) + '</p>' : '') +
     (pemilikText(first.ev) ? '<p class="hl-sub" style="color:var(--hl-accent);font-weight:600;">' + esc(pemilikText(first.ev)) + '</p>' : '') +
@@ -841,10 +843,12 @@ function render(jadwal, now){
   var box = document.createElement("div");
   box.className = "agenda";
   var lastGroup = null;
+  var groupIdx = -1;
   rest.forEach(function(o){
     var groupKey = (o.ev.date || o.ev.date_start) ? tglOneTime(o.ev) :
       (weekdayJawaOf(keyOfLocal(o.dt)) + " " + pasaranOf(keyOfLocal(o.dt)) + ", " + o.dt.getDate() + " " + BULAN[o.dt.getMonth()+1] + " " + o.dt.getFullYear());
     if (groupKey !== lastGroup){
+      groupIdx++;
       var head = document.createElement("div");
       head.className = "day-head";
       head.innerHTML = esc(groupKey) + ' · <span class="day-head-rel">' + esc(relText(o.dt, now)) + '</span>';
@@ -856,14 +860,14 @@ function render(jadwal, now){
     var mbadge2 = masehiBadge(o.dt);
     var timeTxt = o.ev.jam ? (String(o.dt.getHours()).padStart(2,"0")+":"+String(o.dt.getMinutes()).padStart(2,"0")) : "";
     var row = document.createElement("div");
-    row.className = "row";
+    row.className = "row" + (groupIdx % 2 === 1 ? " band-b" : "");
     row.style.cursor = "pointer";
     row.addEventListener("click", (function(idx){ return function(e){
       if (e.target.closest(".pend-chip")) return;
       openSheet(idx);
     }; })(o.idx));
     row.innerHTML =
-      '<div class="row-top"><span class="row-label">' + (o.ev.added_by === "sopir" ? "🚘 " : "") + esc(o.ev.label) + '</span>' +
+      '<div class="row-top"><span class="row-label">' + (o.ev.added_by === "sopir" ? '<span class="sopir-dot"></span>' : "") + esc(o.ev.label) + '</span>' +
       (timeTxt ? '<span class="row-time">'+timeTxt+'</span>' : '') + '</div>' +
       (o.ev.sub ? '<div class="row-sub">'+esc(o.ev.sub)+'</div>' : '') +
       (o.ev.pendherek && o.ev.pendherek.length ? '<div class="row-sub" style="color:var(--accent);font-weight:600;">'+companionHtml(o.ev, o.idx)+'</div>' : '') +
@@ -1120,7 +1124,7 @@ function buildEventFromForm(){
   var sub = $("fSub").value.trim();
   var jam = $("fJam").value || null;
   var jamLabel = jam ? null : ($("fJamLabel").value.trim() || null);
-  // acara enggal ditandhani "saking sopir" (🚘); acara ingkang diewahi tetep
+  // acara enggal ditandhani "saking sopir" (🚗); acara ingkang diewahi tetep
   // nyimpen tandha asline (mboten katut dadi "sopir" mung amarga diewahi).
   var addedBy = editIdx !== null ? (CURRENT_JADWAL[editIdx].added_by || null) : "sopir";
   var pendherek = [];
