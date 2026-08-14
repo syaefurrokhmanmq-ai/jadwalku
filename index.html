@@ -172,8 +172,9 @@
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:3px;}
   .cal-dow{text-align:center; font-size:10px; color:var(--faint); font-weight:700; padding-bottom:4px;}
   .cal-cell{aspect-ratio:1; border-radius:7px; background:var(--surface2); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; gap:1px; position:relative;}
-  .cal-cell .ev-dot{position:absolute; top:4px; right:5px; width:5px; height:5px; border-radius:50%; background:var(--accent);}
-  .cal-cell.today .ev-dot{background:var(--hl-accent);}
+  .cal-cell .ev-dots{position:absolute; top:4px; right:4px; display:flex; gap:2px;}
+  .cal-cell .ev-dots .dot{width:4px; height:4px; border-radius:50%; background:var(--accent);}
+  .cal-cell.today .ev-dots .dot{background:var(--hl-accent);}
   .cal-cell.today{background:var(--hl-bg); border:1px solid var(--hl-line);}
   .cal-cell .cd{font-size:12px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums;}
   .cal-cell.today .cd{color:var(--hl-accent);}
@@ -767,7 +768,7 @@ function hijriBadge(ev, dt, now){
       if (now >= maghribDt) hd = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + 1);
     }
   }
-  var h = gregorianToHijri(hd.getFullYear(), hd.getMonth() + 1, hd.getDate());
+  var h = hijriOf(ymdKey(hd.getFullYear(), hd.getMonth() + 1, hd.getDate()));
   return arNum(h[2]) + " " + HIJRI_BULAN_AR[h[1]] + " " + arNum(h[0]) + " ه";
 }
 // Tanggal Masehi jejeré hijriBadge (format "15 Agustus 2026" tanggal-wulan-
@@ -1278,11 +1279,12 @@ function renderCalendar(){
     var k = ymdKey(calYear, calMonth, day);
     var h = hijriOf(k);
     var isToday = (k === todayKey);
-    var hasEvent = CURRENT_JADWAL.some(function(ev){ return eventOccursOnDay(ev, k); });
+    var evCount = CURRENT_JADWAL.filter(function(ev){ return eventOccursOnDay(ev, k); }).length;
+    var dotsHtml = evCount ? '<span class="ev-dots">' + '<span class="dot"></span>'.repeat(Math.min(evCount, 4)) + '</span>' : '';
     html += '<div class="cal-cell' + (isToday ? ' today' : '') + '">' +
       '<span class="cd">' + day + '</span><span class="ch">' + arNum(h[2]) + '</span>' +
       '<span class="cp">' + PASARAN_ABBR[pasaranOf(k)] + '</span>' +
-      (hasEvent ? '<span class="ev-dot"></span>' : '') + '</div>';
+      dotsHtml + '</div>';
   }
   $("calGrid").innerHTML = html;
 }
