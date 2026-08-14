@@ -1319,12 +1319,14 @@ $("calOffMinus").addEventListener("click", function(e){
   calOffset--;
   try{ localStorage.setItem("jadwalHijriOffset", String(calOffset)); }catch(err){}
   renderCalendar();
+  render(CURRENT_JADWAL, new Date());
 });
 $("calOffPlus").addEventListener("click", function(e){
   e.stopPropagation();
   calOffset++;
   try{ localStorage.setItem("jadwalHijriOffset", String(calOffset)); }catch(err){}
   renderCalendar();
+  render(CURRENT_JADWAL, new Date());
 });
 
 renderSholat();
