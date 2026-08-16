@@ -799,6 +799,18 @@ $("fJam").addEventListener("input", updateSelapananPreview);
 // tanggal 16 Ags 2026: kalih acara ing "20 Agustus" padha-padha katon
 // "٧ رَبِيع الأَوّل", mangka sing malam:true mesthine sampun "٨").
 function hijriBadge(ev, dt, now){
+  // Acara jinis "Wulan Hijriyah" (ev.hijri_month) wis mesthi jangkar tanggal
+  // Hijriyah-é dhewe (mis. hijri_day:13 hijri_month:8) -- iki bab sing
+  // dipun-mangertosi minangka "TRUE" kanthi definisi, dudu asil ngowahi
+  // tanggal Masehi. Koreksi rukyat (calOffset) mung kagem badge Hijriyah
+  // acara SANÈS (mis. Selapanan) sing tanggal Hijriyah-é asil KONVERSI saka
+  // tanggal Masehi -- yèn calOffset melu ditrapaké kene, badge bakal
+  // nyimpang saka angka sing dilebokaké déning operator (bug sing katon
+  // 16 Ags 2026: hijri_day 13/15 katon dadi 14/16).
+  if (ev.hijri_month){
+    var hr = gregorianToHijri(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
+    return arNum(hr[2]) + " " + HIJRI_BULAN_AR[hr[1]] + " " + arNum(hr[0]) + " ه";
+  }
   var hd = dt;
   if (ev.date || ev.date_start){
     if (keyOfLocal(dt) === keyOfLocal(now)){

@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
-"""Ngirim notifikasi push (FCM) ±10 menit sadurunge acara ing jadwal Al Mukarram.
-Mlaku ing GitHub Actions saben 5 menit (.github/workflows/kirim-notifikasi.yml).
+"""Ngirim notifikasi push (FCM) sadurunge acara ing jadwal Al Mukarram.
+Jadwal-e ing .github/workflows/kirim-notifikasi.yml ditulis "saben 5 menit"
+(cron */5), NANGING GitHub Actions ora njamin iku -- diukur langsung saka
+riwayat run tenanan (16 Ags 2026), jarak antar-run pancen 21-207 menit, ora
+tau persis 5 menit (iki wewatesan/kebiasaan GitHub sing "best effort", dudu
+salah setelan). Mula wewatesan jendhela notifikasi (di ngisor) kudu luwih
+amba tinimbang jarak run paling adoh sing tau kedadeyan, supaya paling
+during ana siji run sing kejegur jendhela sadurunge acara diwiwiti --
+dedup liwat /notified aman sanajan jendhela amba (siji kunci per acara+jam
+persis, ora bakal kirim bola-bali sanajan katut ing pirang-pirang run).
 
 Logika "acara sabanjure" (next_occurrence) ing ngisor iki PORT LANGSUNG saka
 D:\\Ngudi Susilo\\_Widget-Sholat\\jawa.py (widget Tkinter) -- iki salinan katelu
@@ -20,8 +28,8 @@ from google.oauth2 import service_account
 
 DATABASE_URL = "https://jadwalku-270ce-default-rtdb.asia-southeast1.firebasedatabase.app"
 PROJECT_ID = "jadwalku-270ce"
-NOTIF_WINDOW_MIN_LOW = 5
-NOTIF_WINDOW_MIN_HIGH = 15
+NOTIF_WINDOW_MIN_LOW = -15
+NOTIF_WINDOW_MIN_HIGH = 240
 
 SCOPES = [
     "https://www.googleapis.com/auth/firebase.database",
@@ -218,8 +226,8 @@ def main():
             due.append((ev, dt, mins))
 
     if not due:
-        print("Boten wonten acara ing wewatesan H-%d nganti H-%d menit." %
-              (NOTIF_WINDOW_MIN_LOW, NOTIF_WINDOW_MIN_HIGH))
+        print("Boten wonten acara ing wewatesan %d menit kepengker nganti %d menit ngajeng." %
+              (-NOTIF_WINDOW_MIN_LOW, NOTIF_WINDOW_MIN_HIGH))
         return
 
     dead_tokens = set()
@@ -229,7 +237,10 @@ def main():
         if key in notified_map:
             continue
         title = ev.get("label", "Jadwal Al Mukarram")
-        body_txt = "Isih %d menit maneh (%02d:%02d WIB)" % (round(mins), dt.hour, dt.minute)
+        if mins >= 0:
+            body_txt = "Isih %d menit maneh (%02d:%02d WIB)" % (round(mins), dt.hour, dt.minute)
+        else:
+            body_txt = "Sampun wiwit %d menit kepengker (%02d:%02d WIB)" % (round(-mins), dt.hour, dt.minute)
         pend = ev.get("pendherek") or []
         if pend:
             body_txt += " · bersama " + ", ".join(pend)
