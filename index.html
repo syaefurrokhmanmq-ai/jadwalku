@@ -750,8 +750,12 @@ document.addEventListener("click", function(e){
 });
 
 function wetonBadge(ev){
-  if (ev.weekday) return ev.pasaran ? (ev.weekday + " " + ev.pasaran) : ev.weekday;
-  return null;
+  if (!ev.weekday) return null;
+  var w = ev.pasaran ? (ev.weekday + " " + ev.pasaran) : ev.weekday;
+  // Acara "malam" kadadeyan bengi sadurunge dinten Jawi kasebut (mis. "malem
+  // Jemuah Kliwon" = bengi Kemis) -- ditandhani supaya ora katon kontradiksi
+  // karo kepala kelompok tanggal, sing nganggo weton tanggal sipil.
+  return ev.malam ? ("🌙 Wengi " + w) : w;
 }
 // Tanggal Hijriyah kagem "rincian jadwal". Kagem acara "Tanggal Tartamtu"
 // (masehi murni, dt-né ora tau gèsèr), pergantosan dinten Hijriyah nalika
@@ -851,16 +855,40 @@ function render(jadwal, now){
   $("agendaSlot").insertAdjacentHTML("beforebegin", '<p class="section-title" id="restTitle">Sabanjuré</p>');
   var box = document.createElement("div");
   box.className = "agenda";
+  // Pra-itung: kanggo saben tanggal sipil, priksa apa kelompok kasebut ngemot
+  // paling ora siji acara "malam" -- identitas dinten Jawi-ne beda karo
+  // tanggal sipil-e (mis. "malem Jemuah Kliwon" ing tanggal sipil "Kemis
+  // Wage"), senajan kadadeyane bengi sing padha persis. Yen ana, kepala
+  // kelompok dikei jeneng ganda "X-malem Y" supaya ora katon kaya kontradiksi.
+  var civilHasMalam = {};
+  rest.forEach(function(o){
+    if (o.ev.date || o.ev.date_start) return;
+    if (o.ev.malam) civilHasMalam[keyOfLocal(o.dt)] = true;
+  });
+
   var lastGroup = null;
   var groupIdx = -1;
   rest.forEach(function(o){
-    var groupKey = (o.ev.date || o.ev.date_start) ? tglOneTime(o.ev) :
-      (weekdayJawaOf(keyOfLocal(o.dt)) + " " + pasaranOf(keyOfLocal(o.dt)) + ", " + o.dt.getDate() + " " + BULAN[o.dt.getMonth()+1] + " " + o.dt.getFullYear());
+    var groupKey, headTxt;
+    if (o.ev.date || o.ev.date_start){
+      groupKey = headTxt = tglOneTime(o.ev);
+    } else {
+      var k = keyOfLocal(o.dt);
+      var civilWeton = weekdayJawaOf(k) + " " + pasaranOf(k);
+      var tglTxt = ", " + o.dt.getDate() + " " + BULAN[o.dt.getMonth()+1] + " " + o.dt.getFullYear();
+      groupKey = civilWeton + tglTxt;
+      if (civilHasMalam[k]){
+        var nk = k + DAY_MS;
+        headTxt = civilWeton + "-malem " + weekdayJawaOf(nk) + " " + pasaranOf(nk) + tglTxt;
+      } else {
+        headTxt = groupKey;
+      }
+    }
     if (groupKey !== lastGroup){
       groupIdx++;
       var head = document.createElement("div");
       head.className = "day-head";
-      head.innerHTML = esc(groupKey) + ' · <span class="day-head-rel">' + esc(relText(o.dt, now)) + '</span>';
+      head.innerHTML = esc(headTxt) + ' · <span class="day-head-rel">' + esc(relText(o.dt, now)) + '</span>';
       box.appendChild(head);
       lastGroup = groupKey;
     }
