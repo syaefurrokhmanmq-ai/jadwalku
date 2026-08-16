@@ -753,14 +753,21 @@ function wetonBadge(ev){
   if (ev.weekday) return ev.pasaran ? (ev.weekday + " " + ev.pasaran) : ev.weekday;
   return null;
 }
-// Tanggal Hijriyah kagem "rincian jadwal". Kagem acara "Selapanan"/"Wulan
-// Hijriyah", "dt" wis mesthi ngetung dinten Jawi sing wis mempeng liwat
-// dinaJawaEfektif() ing nextOccurrence (wis mèngko/gèsèr nalika Maghrib),
-// dadi langsung dikonversi. Kagem acara "Tanggal Tartamtu" (masehi murni,
-// dt-né ora tau gèsèr), pergantosan dinten Hijriyah nalika Maghrib during
-// kudu dietung kene dhewe: menawi dinten kadadeyanipun PERSIS dinten iki lan
-// sakniki wis liwat Maghrib, tanggal Hijriyah-é wis maju sedinten sanajan
-// tanggal Masehi-né during gantos (during tengah dalu / 00.00 WIB).
+// Tanggal Hijriyah kagem "rincian jadwal". Kagem acara "Tanggal Tartamtu"
+// (masehi murni, dt-né ora tau gèsèr), pergantosan dinten Hijriyah nalika
+// Maghrib during kudu dietung kene dhewe: menawi dinten kadadeyanipun
+// PERSIS dinten iki lan sakniki wis liwat Maghrib, tanggal Hijriyah-é wis
+// maju sedinten sanajan tanggal Masehi-né during gantos (during tengah
+// dalu / 00.00 WIB). Kagem acara "Selapanan"/"Wulan Hijriyah" kanthi
+// malam:true, "dt" iku tanggal SIPIL bengi kedadeyané (kanthi sengaja
+// during digèsèr, supados jejer karo acara sanès ing tanggal sipil sing
+// padha) — nanging amarga kedadeyané SASAMPUNIPUN Maghrib, dinten
+// Hijriyah-é MESTHI sampun majeng sedinten ketimbang dinten Hijriyah
+// tengah dalu tanggal sipil kasebut. Menawi mboten digèsèr kene, tanggal
+// Hijriyah bakal katon PADHA karo acara "malam:false" ing tanggal sipil
+// sing padha, senajan dinten Jawi/Islam-ipun beda (bug sing katon ing
+// tanggal 16 Ags 2026: kalih acara ing "20 Agustus" padha-padha katon
+// "٧ رَبِيع الأَوّل", mangka sing malam:true mesthine sampun "٨").
 function hijriBadge(ev, dt, now){
   var hd = dt;
   if (ev.date || ev.date_start){
@@ -769,6 +776,8 @@ function hijriBadge(ev, dt, now){
       var maghribDt = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), mg[0], mg[1], 0, 0);
       if (now >= maghribDt) hd = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + 1);
     }
+  } else if (ev.malam){
+    hd = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + 1);
   }
   var h = hijriOf(ymdKey(hd.getFullYear(), hd.getMonth() + 1, hd.getDate()));
   return arNum(h[2]) + " " + HIJRI_BULAN_AR[h[1]] + " " + arNum(h[0]) + " ه";
