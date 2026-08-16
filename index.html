@@ -377,6 +377,7 @@
         </div>
       </div>
       <label class="chk"><input type="checkbox" id="fMalam"> Wengi/dalu (wiwit ba'da Maghrib, tanggal Masehi mundur sedinten)</label>
+      <div id="fSelapananPreview" style="font-size:11.5px;color:var(--muted);margin:-8px 0 14px;line-height:1.5;"></div>
     </div>
 
     <div id="blokHijriyah" style="display:none;">
@@ -757,6 +758,31 @@ function wetonBadge(ev){
   // karo kepala kelompok tanggal, sing nganggo weton tanggal sipil.
   return ev.malam ? ("🌙 Wengi " + w) : w;
 }
+
+// Preview ing formulir "Tambah/Ewahi Acara" (jenis Selapanan) -- nuduhake
+// bakal katon dadi apa (padha persis karo wetonBadge ing daftar), lan
+// ngelingake yèn jam sing dilebokake ba'da Maghrib nanging "Wengi/dalu"
+// during dicentang (dudu otomatis, amarga loro-lorone sah miturut kepiye
+// sumber/wargi nyebut acarane -- mung diélingaké, ora dipeksa).
+function updateSelapananPreview(){
+  var el = $("fSelapananPreview");
+  if (!el || curJenis !== "selapanan") return;
+  var wd = $("fWeekday").value, ps = $("fPasaran").value;
+  var malam = $("fMalam").checked, jam = $("fJam").value;
+  var badge = wetonBadge({weekday: wd, pasaran: ps, malam: malam});
+  var html = "Bakal katon: <b>" + esc(badge) + "</b>";
+  if (malam){
+    var wi = WEEKDAY_JAWA.indexOf(wd);
+    var prevWd = WEEKDAY_JAWA[(wi + WEEKDAY_JAWA.length - 1) % WEEKDAY_JAWA.length];
+    var prevPs = ps ? PASARAN[(PASARAN.indexOf(ps) + PASARAN.length - 1) % PASARAN.length] : "";
+    html += " — tanggal Masehi-né dietung wiwit bengi " + esc(prevWd + (prevPs ? " " + prevPs : "")) + " (ba'da Maghrib).";
+  } else if (jam && jam >= "17:30"){
+    html += "<br>⚠️ Jam menika limrahipun sampun ba'da Maghrib. Menawi warga/sumber nyebat acara menika nganggé jeneng dinten SABANJURIPUN (tuladha: \"malem Jemuah Kliwon\" kanggé acara bengi Kemis), mangga centang \"Wengi/dalu\" ing nginggil.";
+  }
+  el.innerHTML = html;
+}
+["fWeekday","fPasaran","fMalam"].forEach(function(id){ $(id).addEventListener("change", updateSelapananPreview); });
+$("fJam").addEventListener("input", updateSelapananPreview);
 // Tanggal Hijriyah kagem "rincian jadwal". Kagem acara "Tanggal Tartamtu"
 // (masehi murni, dt-né ora tau gèsèr), pergantosan dinten Hijriyah nalika
 // Maghrib during kudu dietung kene dhewe: menawi dinten kadadeyanipun
@@ -1126,6 +1152,7 @@ function openSheet(idx){
   if (ev && ev.hijri_month) jenis = "hijriyah";
   else if (ev && (ev.date || ev.date_start)) jenis = "tanggal";
   setJenis(jenis);
+  updateSelapananPreview();
 
   $("sheetTitle").textContent = ev ? "Ewahi Acara" : "Tambah Acara";
   $("btnDel").classList.toggle("hidden", !ev);
