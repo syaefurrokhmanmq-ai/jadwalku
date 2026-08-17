@@ -173,7 +173,10 @@
   .cal-koreksi button{background:var(--surface2); border:1px solid var(--line); color:var(--accent); width:22px; height:22px; border-radius:6px; cursor:pointer; font-weight:800;}
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:3px;}
   .cal-dow{text-align:center; font-size:10px; color:var(--faint); font-weight:700; padding-bottom:4px;}
-  .cal-cell{aspect-ratio:1; border-radius:7px; background:var(--surface2); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; gap:1px; position:relative;}
+  .cal-cell{aspect-ratio:1; border-radius:7px; background:var(--surface2); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; gap:1px; position:relative; cursor:pointer;}
+  .cal-cell:active{opacity:.75;}
+  .cal-cell.blank{cursor:default;}
+  .cal-cell.blank:active{opacity:1;}
   .cal-cell .ev-dots{display:flex; gap:2px; margin-top:2px;}
   .cal-cell .ev-dots .dot{width:4px; height:4px; border-radius:50%; background:var(--accent);}
   .cal-cell.today .ev-dots .dot{background:var(--hl-accent);}
@@ -428,6 +431,16 @@
       <button type="button" class="btn-del hidden" id="btnDel">Busak</button>
       <button type="button" class="btn-cancel" id="btnCancel">Batal</button>
       <button type="button" class="btn-save" id="btnSave">Simpen</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="dayOverlay">
+  <div class="sheet">
+    <h2 id="daySheetTitle">Jadwal</h2>
+    <div id="daySheetBody"></div>
+    <div class="sheetbtns">
+      <button type="button" class="btn-cancel" id="btnDayClose" style="flex:1;">Tutup</button>
     </div>
   </div>
 </div>
@@ -1316,6 +1329,74 @@ function hijriOf(dateMs){
 
 // Persis logika nextOccurrence, nanging ngecek SETUNGGAL dinten tartamtu (civilKey),
 // dudu nggoleki kedadeyan sabanjure -- dienggo kanggo titik tandha ing grid kalender.
+// dt kagem acara "malam" nganggo jam Maghrib dinten sipil sing diklik
+// (padha karo cara nextOccurrence ngetung candDt-né), supados badge jam/
+// Hijriyah ing popup tanggal cocog karo tampilan "Sabanjuré" ing ndhuwur.
+function occurrenceDtForDay(ev, civilKey){
+  var cd = new Date(civilKey);
+  var vy = cd.getUTCFullYear(), vm = cd.getUTCMonth() + 1, vd = cd.getUTCDate();
+  if (ev.jam){
+    var jp = ev.jam.split(":").map(Number);
+    return new Date(vy, vm - 1, vd, jp[0], jp[1], 0, 0);
+  }
+  if (!ev.date && !ev.date_start && !ev.hijri_month && ev.malam){
+    var mg = maghribLookup(civilKey) || [18, 0];
+    return new Date(vy, vm - 1, vd, mg[0], mg[1], 0, 0);
+  }
+  return new Date(vy, vm - 1, vd, 0, 0, 0, 0);
+}
+
+function openDaySheet(civilKey){
+  var cd = new Date(civilKey);
+  var vy = cd.getUTCFullYear(), vm = cd.getUTCMonth() + 1, vd = cd.getUTCDate();
+  $("daySheetTitle").textContent = weekdayJawaOf(civilKey) + " " + pasaranOf(civilKey) + ", " + vd + " " + BULAN[vm] + " " + vy;
+
+  var now = new Date();
+  var matches = [];
+  CURRENT_JADWAL.forEach(function(ev, idx){
+    if (eventOccursOnDay(ev, civilKey)) matches.push({ev: ev, idx: idx});
+  });
+
+  var body = $("daySheetBody");
+  if (!matches.length){
+    body.innerHTML = '<p class="empty">Boten wonten acara ing dinten menika.</p>';
+  } else {
+    var html = '<div class="agenda">';
+    matches.forEach(function(m, i){
+      var dt = occurrenceDtForDay(m.ev, civilKey);
+      var badge2 = wetonBadge(m.ev);
+      var hbadge2 = hijriBadge(m.ev, dt, now);
+      var timeTxt = m.ev.jam ? (String(dt.getHours()).padStart(2,"0")+":"+String(dt.getMinutes()).padStart(2,"0")) : (m.ev.jam_label || "");
+      html += '<div class="row' + (i % 2 === 1 ? ' band-b' : '') + '" data-idx="' + m.idx + '" style="cursor:pointer;">' +
+        '<div class="row-top"><span class="row-label">' + (m.ev.added_by === "sopir" ? '<span class="sopir-dot"></span>' : "") + esc(m.ev.label) + '</span>' +
+        (timeTxt ? '<span class="row-time">'+esc(timeTxt)+'</span>' : '') + '</div>' +
+        (m.ev.sub ? '<div class="row-sub">'+esc(m.ev.sub)+'</div>' : '') +
+        (pemilikText(m.ev) ? '<div class="row-sub" style="color:var(--hl-accent);font-weight:600;">'+esc(pemilikText(m.ev))+'</div>' : '') +
+        '<div class="row-meta">' + (badge2 ? '<span class="badge">'+esc(badge2)+'</span>' : '') +
+        (hbadge2 ? '<span class="badge badge-hijri" dir="rtl">'+esc(hbadge2)+'</span>' : '') + '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    body.innerHTML = html;
+    body.querySelectorAll("[data-idx]").forEach(function(row){
+      row.addEventListener("click", function(){
+        var idx = parseInt(row.dataset.idx, 10);
+        closeDaySheet();
+        openSheet(idx);
+      });
+    });
+  }
+  $("dayOverlay").classList.remove("hidden");
+}
+function closeDaySheet(){ $("dayOverlay").classList.add("hidden"); }
+$("btnDayClose").addEventListener("click", closeDaySheet);
+$("dayOverlay").addEventListener("click", function(e){ if (e.target.id === "dayOverlay") closeDaySheet(); });
+$("calGrid").addEventListener("click", function(e){
+  var cell = e.target.closest(".cal-cell");
+  if (!cell || !cell.dataset.key) return;
+  openDaySheet(Number(cell.dataset.key));
+});
+
 function eventOccursOnDay(ev, civilKey){
   if (ev.date || ev.date_start){
     var ds = ev.date_start || ev.date, de = ev.date_end || ev.date || ds;
@@ -1361,7 +1442,7 @@ function renderCalendar(){
     var isToday = (k === todayKey);
     var evCount = CURRENT_JADWAL.filter(function(ev){ return eventOccursOnDay(ev, k); }).length;
     var dotsHtml = evCount ? '<span class="ev-dots">' + '<span class="dot"></span>'.repeat(Math.min(evCount, 4)) + '</span>' : '';
-    html += '<div class="cal-cell' + (isToday ? ' today' : '') + '">' +
+    html += '<div class="cal-cell' + (isToday ? ' today' : '') + '" data-key="' + k + '">' +
       '<span class="cd">' + day + '</span><span class="ch">' + arNum(h[2]) + '</span>' +
       '<span class="cp">' + PASARAN_ABBR[pasaranOf(k)] + '</span>' +
       dotsHtml + '</div>';
