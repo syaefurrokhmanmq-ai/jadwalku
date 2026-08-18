@@ -190,7 +190,8 @@ def fcm_send(token, title, body, access_token):
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", "ignore")
         print("  gagal token %s...: HTTP %s %s" % (token[:12], e.code, detail[:200]))
-        return "UNREGISTERED" in detail or "NOT_FOUND" in detail or e.code in (400, 404)
+        dead = "UNREGISTERED" in detail or "NOT_FOUND" in detail or e.code in (400, 404)
+        return "UNREGISTERED" if dead else False
 
 
 def main():
@@ -246,13 +247,19 @@ def main():
             body_txt += " · bersama " + ", ".join(pend)
         print("Ngirim: %s (H-%d menit) dhateng %d token" % (title, round(mins), len(fcm_tokens)))
         any_ok = False
+        had_transient_failure = False
         for tok in fcm_tokens:
             result = fcm_send(tok, title, body_txt, token)
             if result is True:
                 any_ok = True
-            elif result == "UNREGISTERED" or result is True and False:
+            elif result == "UNREGISTERED":
                 dead_tokens.add(tok)
-        db_put("/notified/" + key, token, {"label": title, "ts": int(now.timestamp())})
+            else:
+                had_transient_failure = True
+        if any_ok or not had_transient_failure:
+            db_put("/notified/" + key, token, {"label": title, "ts": int(now.timestamp())})
+        else:
+            print("  kabeh gagal sementara (server/token error) — badhe dicoba maneh 5 menit ngajeng.")
 
     for tok in dead_tokens:
         print("Mbusak token mati:", tok[:12] + "...")
